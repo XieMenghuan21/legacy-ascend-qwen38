@@ -1,0 +1,133 @@
+ggml_cann_gdn_910: custom GDN launch queued mode=gdn_native_h48_q16__kernel0 heads=48 device=4 blocks=24
+new_pool_for_device: device 4 use vmm pool
+ggml_cann_gdn_910: custom GDN launch queued mode=gdn_decode_910_h48__kernel0 heads=48 device=4 blocks=24
+backend=CANN4, layout=contiguous, Hq=16,Hk=16,Hv=48,D=128,T=1,B=1,K=1, first_graph_us=881.764
+output: max_abs=1.11758709e-08, max_scaled_error=0.00449749495, failed_elements=0, max_abs_index=1753
+state: max_abs=5.96046448e-08, max_scaled_error=0.0148797469, failed_elements=0, max_abs_index=119598
+PASS
+backend=CANN4, layout=strided-heads, Hq=16,Hk=16,Hv=48,D=128,T=1,B=1,K=1, first_graph_us=2243.295
+output: max_abs=1.11758709e-08, max_scaled_error=0.00449749495, failed_elements=0, max_abs_index=1753
+state: max_abs=5.96046448e-08, max_scaled_error=0.0148797469, failed_elements=0, max_abs_index=119598
+PASS
+operator=SSM_CONV, backend=CANN4, C=10240, T=1, taps=4, B=1
+precision_note=F32 interface and F32 reference; old-910 cubeMathType=1 permits internal FP16 computation. F32 tensors do not prove F32 compute.
+ggml_cann_try_ssm_910: custom SSM launch queued channels=10240 device=4 blocks=32
+warm_graph_us=86.048
+first_graph_us=683.201, compared_elements=10240
+max_abs=0, mean_abs=0, rmse=0, reference_rms=0.4991341702, normalized_rmse=0
+nonfinite=0, abs_over_1e-4=0, abs_over_1e-3=0
+max_abs_token=0, max_abs_channel=0, actual_at_max=-0.135830164, expected_at_max=-0.135830164
+max_abs_limit=2e-06, normalized_rmse_limit=2e-06, accuracy=PASS_USER_LIMITS
+ggml_cann_try_rms_910: custom RMS launch queued width=5120 rows=1 stride=5120 device=4
+case=0 scale=0 max_abs=0 nrmse=0 failed_elements=0
+case=1 scale=1e-08 max_abs=1.25276e-12 nrmse=6.64396e-08 failed_elements=0
+case=2 scale=0.0001 max_abs=1.85456e-08 nrmse=8.9947e-08 failed_elements=0
+case=3 scale=1 max_abs=3.02617e-07 nrmse=1.39921e-07 failed_elements=0
+case=4 scale=100 max_abs=2.24144e-07 nrmse=9.69902e-08 failed_elements=0
+case=5 scale=1e+10 max_abs=2.23344e-07 nrmse=9.66765e-08 failed_elements=0
+case=6 scale=-1 max_abs=2.31625e-08 nrmse=2.31625e-08 failed_elements=0
+RMS_RESULT backend=CANN4 width=5120 rows=1 stride=5120 epsilon=9.999999975e-07 cases=7 max_abs=3.026173221e-07 max_nrmse=1.399213521e-07 sync_graph_us=69.987845 accuracy=PASS
+ggml_cann_try_rms_910: custom RMS launch queued width=128 rows=48 stride=128 device=4
+case=0 scale=0 max_abs=0 nrmse=0 failed_elements=0
+case=1 scale=1e-08 max_abs=1.2595e-12 nrmse=6.77015e-08 failed_elements=0
+case=2 scale=0.0001 max_abs=1.78242e-08 nrmse=4.78855e-08 failed_elements=0
+case=3 scale=1 max_abs=2.35814e-07 nrmse=5.37584e-08 failed_elements=0
+case=4 scale=100 max_abs=2.82703e-07 nrmse=5.6691e-08 failed_elements=0
+case=5 scale=1e+10 max_abs=3.70627e-07 nrmse=5.99675e-08 failed_elements=0
+case=6 scale=-1 max_abs=2.31625e-08 nrmse=2.31625e-08 failed_elements=0
+RMS_RESULT backend=CANN4 width=128 rows=48 stride=128 epsilon=9.999999975e-07 cases=7 max_abs=3.706269651e-07 max_nrmse=6.770153906e-08 sync_graph_us=69.70354 accuracy=PASS
+ggml_cann_try_rms_910: custom RMS launch queued width=256 rows=24 stride=512 device=4
+case=0 scale=0 max_abs=0 nrmse=0 failed_elements=0
+case=1 scale=1e-08 max_abs=1.25957e-12 nrmse=6.73745e-08 failed_elements=0
+case=2 scale=0.0001 max_abs=1.67984e-08 nrmse=5.3238e-08 failed_elements=0
+case=3 scale=1 max_abs=2.1108e-07 nrmse=4.93871e-08 failed_elements=0
+case=4 scale=100 max_abs=2.13636e-07 nrmse=5.99159e-08 failed_elements=0
+case=5 scale=1e+10 max_abs=2.41259e-07 nrmse=5.7181e-08 failed_elements=0
+case=6 scale=-1 max_abs=2.31625e-08 nrmse=2.31625e-08 failed_elements=0
+RMS_RESULT backend=CANN4 width=256 rows=24 stride=512 epsilon=9.999999975e-07 cases=7 max_abs=2.412591651e-07 max_nrmse=6.73744883e-08 sync_graph_us=69.863195 accuracy=PASS
+ggml_cann_try_rms_910: custom RMS launch queued width=256 rows=4 stride=256 device=4
+case=0 scale=0 max_abs=0 nrmse=0 failed_elements=0
+case=1 scale=1e-08 max_abs=1.24501e-12 nrmse=6.67031e-08 failed_elements=0
+case=2 scale=0.0001 max_abs=1.67984e-08 nrmse=7.99233e-08 failed_elements=0
+case=3 scale=1 max_abs=1.44353e-07 nrmse=4.97393e-08 failed_elements=0
+case=4 scale=100 max_abs=1.88933e-07 nrmse=6.31248e-08 failed_elements=0
+case=5 scale=1e+10 max_abs=1.98381e-07 nrmse=5.75733e-08 failed_elements=0
+case=6 scale=-1 max_abs=2.31625e-08 nrmse=2.31625e-08 failed_elements=0
+RMS_RESULT backend=CANN4 width=256 rows=4 stride=256 epsilon=9.999999975e-07 cases=7 max_abs=1.983807307e-07 max_nrmse=7.992330252e-08 sync_graph_us=68.93578 accuracy=PASS
+ggml_cann_try_rms_910: custom RMS launch queued width=128 rows=16 stride=128 device=4
+case=0 scale=0 max_abs=0 nrmse=0 failed_elements=0
+case=1 scale=1e-08 max_abs=1.37978e-11 nrmse=5.35293e-08 failed_elements=0
+case=2 scale=0.0001 max_abs=1.45182e-07 nrmse=5.95726e-08 failed_elements=0
+case=3 scale=1 max_abs=2.69215e-07 nrmse=4.47768e-08 failed_elements=0
+case=4 scale=100 max_abs=2.8229e-07 nrmse=5.66051e-08 failed_elements=0
+case=5 scale=1e+10 max_abs=2.8203e-07 nrmse=5.54808e-08 failed_elements=0
+case=6 scale=-1 max_abs=3.90625e-09 nrmse=3.90625e-09 failed_elements=0
+RMS_RESULT backend=CANN4 width=128 rows=16 stride=128 epsilon=7.81249998e-09 cases=7 max_abs=2.822899283e-07 max_nrmse=5.957263315e-08 sync_graph_us=62.989935 accuracy=PASS
+new_pool_for_device: device 4 use vmm pool
+ggml_cann_try_rope_910_native: F32 H=4 D=256 rot=64 decode queued on device 4
+heads=4 tokens=1 padded=0 base=0 max_abs=3.42727e-07 nrmse=2.60793e-08 tail_errors=0 elapsed_us=103097 status=PASS
+heads=4 tokens=1 padded=0 base=17 max_abs=5.96046e-07 nrmse=4.21751e-08 tail_errors=0 elapsed_us=255.184 status=PASS
+heads=4 tokens=1 padded=0 base=127 max_abs=6.73532e-06 nrmse=3.99465e-07 tail_errors=0 elapsed_us=166.052 status=PASS
+heads=4 tokens=1 padded=0 base=8191 max_abs=0.000266202 nrmse=1.21952e-05 tail_errors=0 elapsed_us=152.453 status=PASS
+heads=4 tokens=1 padded=1 base=0 max_abs=3.57628e-07 nrmse=2.85703e-08 tail_errors=0 elapsed_us=19405.7 status=PASS
+heads=4 tokens=1 padded=1 base=17 max_abs=7.7486e-07 nrmse=4.78232e-08 tail_errors=0 elapsed_us=205.113 status=PASS
+heads=4 tokens=1 padded=1 base=127 max_abs=7.98702e-06 nrmse=4.56425e-07 tail_errors=0 elapsed_us=173.743 status=PASS
+heads=4 tokens=1 padded=1 base=8191 max_abs=0.000306308 nrmse=1.52234e-05 tail_errors=0 elapsed_us=171.652 status=PASS
+heads=4 tokens=23 padded=0 base=0 max_abs=2.20537e-06 nrmse=4.27436e-08 tail_errors=0 elapsed_us=2781.92 status=PASS
+heads=4 tokens=23 padded=0 base=17 max_abs=2.41399e-06 nrmse=7.45838e-08 tail_errors=0 elapsed_us=221.884 status=PASS
+heads=4 tokens=23 padded=0 base=127 max_abs=9.65595e-06 nrmse=2.91397e-07 tail_errors=0 elapsed_us=270.844 status=PASS
+heads=4 tokens=23 padded=0 base=8191 max_abs=0.000596881 nrmse=1.63195e-05 tail_errors=0 elapsed_us=211.873 status=PASS
+heads=4 tokens=23 padded=1 base=0 max_abs=1.90735e-06 nrmse=4.15694e-08 tail_errors=0 elapsed_us=427.547 status=PASS
+heads=4 tokens=23 padded=1 base=17 max_abs=2.44379e-06 nrmse=7.57665e-08 tail_errors=0 elapsed_us=280.264 status=PASS
+heads=4 tokens=23 padded=1 base=127 max_abs=9.65595e-06 nrmse=3.045e-07 tail_errors=0 elapsed_us=261.154 status=PASS
+heads=4 tokens=23 padded=1 base=8191 max_abs=0.000607312 nrmse=1.56571e-05 tail_errors=0 elapsed_us=264.594 status=PASS
+ggml_cann_try_rope_910_native: F32 H=24 D=256 rot=64 decode queued on device 4
+heads=24 tokens=1 padded=0 base=0 max_abs=4.61936e-07 nrmse=2.69664e-08 tail_errors=0 elapsed_us=245.114 status=PASS
+heads=24 tokens=1 padded=0 base=17 max_abs=7.7486e-07 nrmse=4.33302e-08 tail_errors=0 elapsed_us=103.662 status=PASS
+heads=24 tokens=1 padded=0 base=127 max_abs=8.10623e-06 nrmse=4.17104e-07 tail_errors=0 elapsed_us=94.612 status=PASS
+heads=24 tokens=1 padded=0 base=8191 max_abs=0.000306994 nrmse=1.27721e-05 tail_errors=0 elapsed_us=138.192 status=PASS
+heads=24 tokens=1 padded=1 base=0 max_abs=4.76837e-07 nrmse=2.86467e-08 tail_errors=0 elapsed_us=539.879 status=PASS
+heads=24 tokens=1 padded=1 base=17 max_abs=8.34465e-07 nrmse=4.47988e-08 tail_errors=0 elapsed_us=246.504 status=PASS
+heads=24 tokens=1 padded=1 base=127 max_abs=8.10623e-06 nrmse=4.42349e-07 tail_errors=0 elapsed_us=229.504 status=PASS
+heads=24 tokens=1 padded=1 base=8191 max_abs=0.00030759 nrmse=1.34989e-05 tail_errors=0 elapsed_us=227.783 status=PASS
+heads=24 tokens=23 padded=0 base=0 max_abs=2.48849e-06 nrmse=4.22731e-08 tail_errors=0 elapsed_us=607.749 status=PASS
+heads=24 tokens=23 padded=0 base=17 max_abs=2.54065e-06 nrmse=7.49433e-08 tail_errors=0 elapsed_us=285.004 status=PASS
+heads=24 tokens=23 padded=0 base=127 max_abs=9.80496e-06 nrmse=2.95137e-07 tail_errors=0 elapsed_us=288.775 status=PASS
+heads=24 tokens=23 padded=0 base=8191 max_abs=0.000607073 nrmse=1.62562e-05 tail_errors=0 elapsed_us=271.444 status=PASS
+heads=24 tokens=23 padded=1 base=0 max_abs=2.44379e-06 nrmse=4.24164e-08 tail_errors=0 elapsed_us=450.967 status=PASS
+heads=24 tokens=23 padded=1 base=17 max_abs=2.51085e-06 nrmse=7.49136e-08 tail_errors=0 elapsed_us=283.734 status=PASS
+heads=24 tokens=23 padded=1 base=127 max_abs=9.74536e-06 nrmse=2.95435e-07 tail_errors=0 elapsed_us=286.084 status=PASS
+heads=24 tokens=23 padded=1 base=8191 max_abs=0.000607431 nrmse=1.63881e-05 tail_errors=0 elapsed_us=275.004 status=PASS
+All 32 IMRoPE checks passed
+ggml_cann_try_setrows_910: native K decode update queued on device 4
+kind=K tagged=1 position=0 compared_half_elements=262144 bit_mismatches=0 elapsed_us=699.811
+kind=K tagged=1 position=1 compared_half_elements=262144 bit_mismatches=0 elapsed_us=101.182
+kind=K tagged=1 position=7 compared_half_elements=262144 bit_mismatches=0 elapsed_us=105.192
+kind=K tagged=1 position=15 compared_half_elements=262144 bit_mismatches=0 elapsed_us=104.832
+kind=K tagged=1 position=16 compared_half_elements=262144 bit_mismatches=0 elapsed_us=100.052
+kind=K tagged=1 position=17 compared_half_elements=262144 bit_mismatches=0 elapsed_us=98.862
+kind=K tagged=1 position=31 compared_half_elements=262144 bit_mismatches=0 elapsed_us=95.822
+kind=K tagged=1 position=63 compared_half_elements=262144 bit_mismatches=0 elapsed_us=99.441
+kind=K tagged=1 position=127 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.302
+kind=K tagged=1 position=128 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.262
+kind=K tagged=1 position=239 compared_half_elements=262144 bit_mismatches=0 elapsed_us=101.142
+kind=K tagged=1 position=240 compared_half_elements=262144 bit_mismatches=0 elapsed_us=88.491
+kind=K tagged=1 position=254 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.151
+kind=K tagged=1 position=255 compared_half_elements=262144 bit_mismatches=0 elapsed_us=94.411
+ggml_cann_try_setrows_910: native V decode update queued on device 4
+kind=V tagged=1 position=0 compared_half_elements=262144 bit_mismatches=0 elapsed_us=183.783
+kind=V tagged=1 position=1 compared_half_elements=262144 bit_mismatches=0 elapsed_us=93.562
+kind=V tagged=1 position=7 compared_half_elements=262144 bit_mismatches=0 elapsed_us=95.832
+kind=V tagged=1 position=15 compared_half_elements=262144 bit_mismatches=0 elapsed_us=98.312
+kind=V tagged=1 position=16 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.791
+kind=V tagged=1 position=17 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.982
+kind=V tagged=1 position=31 compared_half_elements=262144 bit_mismatches=0 elapsed_us=107.162
+kind=V tagged=1 position=63 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.912
+kind=V tagged=1 position=127 compared_half_elements=262144 bit_mismatches=0 elapsed_us=102.542
+kind=V tagged=1 position=128 compared_half_elements=262144 bit_mismatches=0 elapsed_us=95.261
+kind=V tagged=1 position=239 compared_half_elements=262144 bit_mismatches=0 elapsed_us=98.541
+kind=V tagged=1 position=240 compared_half_elements=262144 bit_mismatches=0 elapsed_us=96.752
+kind=V tagged=1 position=254 compared_half_elements=262144 bit_mismatches=0 elapsed_us=98.011
+kind=V tagged=1 position=255 compared_half_elements=262144 bit_mismatches=0 elapsed_us=95.302
+All 28 SET_ROWS full-cache comparisons passed
+All selected hardware operator tests passed

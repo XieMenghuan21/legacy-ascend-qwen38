@@ -1,0 +1,73 @@
+{
+  "measurement": "decode only; same 33-token prompt and 64-token output; 63 decode iterations per trial",
+  "historical_stages": [
+    {
+      "name": "initial_compatible_baseline",
+      "decode_ms": 17157.19,
+      "decode_steps": 63,
+      "tokens_per_second": 3.67192996055881
+    },
+    {
+      "name": "native_GDN_and_SSM",
+      "decode_ms": 13940.24,
+      "decode_steps": 63,
+      "tokens_per_second": 4.519290916081789
+    },
+    {
+      "name": "plus_isolated_cache_fix",
+      "decode_ms": 12699.22,
+      "decode_steps": 63,
+      "tokens_per_second": 4.960934608582259
+    }
+  ],
+  "final_trials": [
+    {
+      "request_index": 0,
+      "answer": "检索增强生成（Retrieval-Augmented Generation，简称 **RAG**）是一种结合了**信息检索**和**大语言模型（LLM）生成**能力的架构。它的核心目的是解决大模型“幻觉”（Hallucination）问题以及知识时效性不足的问题，通过从外部知识库中",
+      "answer_utf8_valid": true,
+      "prompt_tokens": 33,
+      "output_tokens": 64,
+      "sampled_tokens": 64,
+      "requested_output_tokens": 64,
+      "context_tokens": 256,
+      "stop_reason": "length",
+      "n_p_eval": 33,
+      "n_eval": 63,
+      "t_p_eval_ms": 2550.798,
+      "t_eval_ms": 11103.529,
+      "t_load_ms": 2550.832,
+      "decode_tokens_per_second": 5.67387179337,
+      "regression_passed": null
+    },
+    {
+      "request_index": 0,
+      "answer": "检索增强生成（Retrieval-Augmented Generation，简称 **RAG**）是一种结合了**信息检索**和**大语言模型（LLM）生成**能力的架构。它的核心目的是解决大模型“幻觉”（Hallucination）问题以及知识时效性不足的问题，通过从外部知识库中",
+      "answer_utf8_valid": true,
+      "prompt_tokens": 33,
+      "output_tokens": 64,
+      "sampled_tokens": 64,
+      "requested_output_tokens": 64,
+      "context_tokens": 256,
+      "stop_reason": "length",
+      "n_p_eval": 33,
+      "n_eval": 63,
+      "t_p_eval_ms": 2457.636,
+      "t_eval_ms": 11118.029,
+      "t_load_ms": 2457.686,
+      "decode_tokens_per_second": 5.66647199787,
+      "regression_passed": null
+    }
+  ],
+  "final_weighted_decode_tokens_per_second": 5.6701694813657975,
+  "speedup_over_initial_percent": 54.41932559364196,
+  "speedup_over_previous_percent": 14.296396319285986,
+  "decode_time_reduction_over_initial_percent": 35.241266198019595,
+  "regression_passed": true,
+  "historical_and_final_64_token_text_identical": true,
+  "limitations": [
+    "Two final trials; historical stages one trial each",
+    "Short context 256; concurrency 1; 6 old Ascend 910 NPUs and CPU fallback",
+    "Q4 GGUF expanded to FP16 storage, not original FP16 precision",
+    "Not an HTTP API service or full model capability benchmark"
+  ]
+}

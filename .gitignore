@@ -1,0 +1,23 @@
+build-inputs/
+build/
+dist/
+kernel_meta/
+__pycache__/
+*.pyc
+*.gguf
+*.safetensors
+*.o
+*.so
+*.so.*
+*.pem
+*.key
+*.env
+.env*
+.ssh/
+node_modules/
+.cache/
+private-evidence/
+local-results/
+
+# One reviewed, licensed and checksum-pinned runtime backport.
+!artifacts/cache-fix/libnnopbase.so

@@ -1,0 +1,22 @@
+{
+  "output": {
+    "passed": true,
+    "finite": true,
+    "elements": 6144,
+    "max_abs_error": 1.1641532182693481e-08,
+    "rms_error": 9.463786474234916e-10,
+    "max_relative_error_above_1e_6": 2.2398835114890545e-05,
+    "failed_elements": 0
+  },
+  "state": {
+    "passed": true,
+    "finite": true,
+    "elements": 786432,
+    "max_abs_error": 3.2782554626464844e-07,
+    "rms_error": 5.984525578534304e-09,
+    "max_relative_error_above_1e_6": 0.0007946262684007431,
+    "failed_elements": 0
+  },
+  "rtol": 2e-05,
+  "atol": 2e-06
+}

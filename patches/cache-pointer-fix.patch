@@ -1,0 +1,10 @@
+--- a/src/nnopbase/composite_op/aclnn_engine/rts_arg.h
++++ b/src/nnopbase/composite_op/aclnn_engine/rts_arg.h
+@@ -234,6 +234,7 @@
+ 
+     KernelLaunchConfig &GetKernelLaunchConfig()
+     {
++        launchCfg_.kernelNameOfNoFatBin = kernelNameOfNoFatBin_;
+         return launchCfg_;
+     }
+ 

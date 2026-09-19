@@ -1,0 +1,1077 @@
+--- a/ggml/src/ggml-cann/ggml-cann.cpp
++++ b/ggml/src/ggml-cann/ggml-cann.cpp
+@@ -1,3 +1,5 @@
++#include "rope_910.h"
++#include <chrono>
+ /*
+  * Copyright (c) 2023-2026 The ggml authors
+  *
+@@ -25,6 +27,7 @@
+ #include "ggml-backend-impl.h"
+ #include "ggml-cann/aclnn_ops.h"
+ #include "ggml-cann/common.h"
++#include "ggml-cann/gdn_910.h"
+ #include "ggml-impl.h"
+ #include "ggml.h"
+ 
+@@ -2004,6 +2007,9 @@
+         case GGML_OP_OUT_PROD:
+             ggml_cann_out_prod(ctx, dst);
+             break;
++        case GGML_OP_GATED_DELTA_NET:
++            ggml_cann_gdn_910(ctx, dst);
++            break;
+         case GGML_OP_GATED_LINEAR_ATTN:
+             ggml_cann_gated_linear_attn(ctx, dst);
+             break;
+@@ -2258,6 +2264,20 @@
+  * @param use_cann_graph               Whether to use CANN graph execution.
+  * @param cann_graph_capture_required  Whether graph capture is needed due to graph changes.
+  */
++
++struct cann_op_profile {
++    uint64_t count[GGML_OP_COUNT] = {};
++    double microseconds[GGML_OP_COUNT] = {};
++    ~cann_op_profile() {
++        for (int i=0;i<GGML_OP_COUNT;++i) {
++            if(count[i]) std::fprintf(stderr, "CANN_PROFILE op=%s calls=%llu total_us=%.3f mean_us=%.3f\n",
++                ggml_op_name(static_cast<ggml_op>(i)),static_cast<unsigned long long>(count[i]),
++                microseconds[i],microseconds[i]/count[i]);
++        }
++    }
++};
++static cann_op_profile & profile_stats() { static cann_op_profile value; return value; }
++
+ static void evaluate_and_capture_cann_graph(ggml_backend_cann_context * cann_ctx,
+                                             ggml_cgraph *               cgraph,
+                                             bool                        use_cann_graph,
+@@ -2291,7 +2311,19 @@
+                 continue;
+             }
+ 
++            static const bool profile_enabled = std::getenv("GGML_CANN_PROFILE_SYNC") != nullptr;
++            std::chrono::steady_clock::time_point profile_start;
++            if (profile_enabled) {
++                ACL_CHECK(aclrtSynchronizeStream(cann_ctx->stream()));
++                profile_start = std::chrono::steady_clock::now();
++            }
+             bool ok = ggml_cann_compute_forward(*cann_ctx, node);
++            if (profile_enabled) {
++                ACL_CHECK(aclrtSynchronizeStream(cann_ctx->stream()));
++                auto & p = profile_stats();
++                ++p.count[node->op];
++                p.microseconds[node->op] += std::chrono::duration<double,std::micro>(std::chrono::steady_clock::now()-profile_start).count();
++            }
+             if (!ok) {
+                 GGML_LOG_ERROR("%s: op not supported %s (%s)\n", __func__, node->name, ggml_op_name(node->op));
+             }
+@@ -2402,6 +2434,8 @@
+  */
+ static bool ggml_backend_cann_supports_op(ggml_backend_dev_t dev, const ggml_tensor * op) {
+     switch (op->op) {
++        case GGML_OP_GATED_DELTA_NET:
++            return ggml_cann_supports_gdn_910(op);
+         case GGML_OP_UNARY:
+             switch (ggml_get_unary_op(op)) {
+                 case GGML_UNARY_OP_ABS:
+@@ -2537,6 +2571,7 @@
+                 }
+             }
+         case GGML_OP_ROPE:
++            if (std::string(aclrtGetSocName()) == "Ascend910B") return ggml_cann_supports_rope_910(op);
+             {
+                 if (((const int32_t *) op->op_params)[15] != 0) {
+                     return false; // FIXME: support ggml_rope_set_offset
+--- a/ggml/src/ggml-cann/aclnn_ops.cpp
++++ b/ggml/src/ggml-cann/aclnn_ops.cpp
+@@ -1,3 +1,6 @@
++#include "rms_910.h"
++#include "rope_910.h"
++#include "ssm_910.h"
+ /*
+  * Copyright (c) 2023-2026 The ggml authors
+  *
+@@ -1309,6 +1312,7 @@
+ }
+ 
+ void ggml_cann_rms_norm(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    if (ggml_cann_try_rms_910(ctx, dst)) return;
+     ggml_tensor * src = dst->src[0];
+ 
+     acl_tensor_ptr acl_src = ggml_cann_create_tensor(src);
+@@ -2089,7 +2093,10 @@
+     }
+ }
+ 
++#include "setrows_910.inc"
++
+ void ggml_cann_set_rows(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    if (ggml_cann_try_setrows_910(ctx, dst)) return;
+     ggml_tensor * src0 = dst->src[0];  // source values
+     ggml_tensor * src1 = dst->src[1];  // row indices
+ 
+@@ -2906,6 +2913,8 @@
+ }
+ #endif
+ 
++#include "rope_910.inc"
++
+ void ggml_cann_rope(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
+     ggml_tensor * src0 = dst->src[0];  // input
+ 
+@@ -2971,6 +2980,11 @@
+     // init ctx.rope_cos/rope_sin cache
+     aclnn_rope_cache_init(ctx, dst, corr_dims, ext_factor, theta_scale, freq_scale, attn_factor, is_neox, sections,
+                           mrope_used, is_imrope, is_vision, rope_dims);
++
++    if (std::string(aclrtGetSocName()) == "Ascend910B" && ggml_cann_supports_rope_910(dst)) {
++        ggml_cann_rope_910_composite(ctx, dst);
++        return;
++    }
+ 
+     // Cache is generated with ne00 dimensions, so we use ne00 for reshape
+     int64_t sin_reshape_ne[4] = { rope_dims, 1, ne02, 1 };
+@@ -4260,6 +4274,7 @@
+ }
+ 
+ void ggml_cann_ssm_conv(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    if (ggml_cann_try_ssm_910(ctx, dst)) return;
+     ggml_tensor * src0 = dst->src[0];  // conv_x
+     ggml_tensor * src1 = dst->src[1];  // conv1d.weight
+ 
+@@ -4341,7 +4356,7 @@
+ 
+     const bool    transposed   = false;
+     const int64_t groups       = nr;  // depthwise: one group per inner dim
+-    int8_t        cubeMathType = 0;
++    int8_t        cubeMathType = (std::string(aclrtGetSocName()) == "Ascend910B") ? 1 : 0;
+ 
+ #ifdef ASCEND_310P
+     cubeMathType = 1;
+--- a/ggml/src/ggml-cann/CMakeLists.txt
++++ b/ggml/src/ggml-cann/CMakeLists.txt
+@@ -57,10 +57,14 @@
+         ${CANN_INSTALL_DIR}/include
+         ${CANN_INSTALL_DIR}/include/aclnn
+         ${CANN_INSTALL_DIR}/acllib/include
++        ${CANN_INSTALL_DIR}/aarch64-linux/pkg_inc
++        ${CANN_INSTALL_DIR}/aarch64-linux/pkg_inc/runtime
++        ${CANN_INSTALL_DIR}/aarch64-linux/pkg_inc/profiling
+     )
+ 
+     list(APPEND CANN_LIBRARIES
+         ascendcl
++        runtime
+         nnopbase
+         opapi
+         acl_op_compiler
+--- /dev/null
++++ b/ggml/src/ggml-cann/gdn_910.cpp
+@@ -0,0 +1,292 @@
++#include "gdn_910.h"
++
++#include <runtime/rt.h>
++
++#include <array>
++#include <atomic>
++#include <cstdlib>
++#include <cstring>
++#include <fstream>
++#include <string>
++#include <utility>
++#include <vector>
++
++namespace {
++constexpr int64_t WIDTH = 128;
++constexpr size_t ROW_BYTES = WIDTH * sizeof(float);
++constexpr std::streamoff MAX_ELF_BYTES = 64 * 1024 * 1024;
++
++enum class gdn_mode {
++    packed32,
++    packed48,
++    native48_q16,
++    native48_q48,
++    unavailable,
++};
++
++std::string environment_path(const char * variable, const char * filename = nullptr) {
++    const char * value = std::getenv(variable);
++    if (value == nullptr || value[0] == '\0') {
++        return {};
++    }
++    std::string path(value);
++    if (filename != nullptr) {
++        if (path.back() != '/') {
++            path += '/';
++        }
++        path += filename;
++    }
++    return path;
++}
++
++bool readable_elf(const std::string & path) {
++    if (path.empty()) {
++        return false;
++    }
++    std::ifstream input(path, std::ios::binary | std::ios::ate);
++    if (!input) {
++        return false;
++    }
++    const std::streamoff size = input.tellg();
++    return size > 0 && size <= MAX_ELF_BYTES;
++}
++
++struct gdn_spec {
++    const std::string path;
++    const std::string stub;
++    const std::string entry;
++    const bool available;
++
++    gdn_spec(std::string path_value, const char * stub_value, const char * entry_value)
++        : path(std::move(path_value)), stub(stub_value), entry(entry_value), available(readable_elf(path)) {}
++};
++
++const gdn_spec & specification(gdn_mode mode) {
++    // Environment configuration is immutable for a process. Cache file checks so
++    // support queries do not perform filesystem I/O for every decoded token.
++    switch (mode) {
++        case gdn_mode::packed32: {
++            static const gdn_spec * const spec = new gdn_spec(environment_path("GGML_CANN_GDN_910_BINARY"),
++                                       "gdn_decode_910_ggml_h32", "gdn_decode_910__kernel0");
++            return *spec;
++        }
++        case gdn_mode::packed48: {
++            static const gdn_spec * const spec = new gdn_spec(environment_path("GGML_CANN_GDN_910_BINARY_48"),
++                                       "gdn_decode_910_ggml_h48", "gdn_decode_910_h48__kernel0");
++            return *spec;
++        }
++        case gdn_mode::native48_q16: {
++            static const gdn_spec * const spec = new gdn_spec(environment_path("GGML_CANN_GDN_NATIVE_DIR", "gdn_native_h48_q16.o"),
++                                       "gdn_native_910_ggml_h48_q16", "gdn_native_h48_q16__kernel0");
++            return *spec;
++        }
++        case gdn_mode::native48_q48: {
++            static const gdn_spec * const spec = new gdn_spec(environment_path("GGML_CANN_GDN_NATIVE_DIR", "gdn_native_h48_q48.o"),
++                                       "gdn_native_910_ggml_h48_q48", "gdn_native_h48_q48__kernel0");
++            return *spec;
++        }
++        case gdn_mode::unavailable:
++            GGML_ABORT("No compatible GDN 910 kernel");
++    }
++    GGML_ABORT("Invalid GDN 910 kernel mode");
++}
++
++bool shape(const ggml_tensor * tensor, int64_t d0, int64_t d1, int64_t d2, int64_t d3) {
++    return tensor->ne[0] == d0 && tensor->ne[1] == d1 && tensor->ne[2] == d2 && tensor->ne[3] == d3;
++}
++
++gdn_mode select_mode(const ggml_tensor * op) {
++    const ggml_tensor * q = op->src[0];
++    const ggml_tensor * k = op->src[1];
++    const ggml_tensor * v = op->src[2];
++    // The common support checks already enforce FP32 rows, compact gates, T=B=1.
++    if (v->ne[1] == 48 && q->ne[1] == k->ne[1] &&
++        q->nb[1] == ROW_BYTES && k->nb[1] == ROW_BYTES && v->nb[1] == ROW_BYTES) {
++        if (q->ne[1] == 16 && specification(gdn_mode::native48_q16).available) {
++            return gdn_mode::native48_q16;
++        }
++        if (q->ne[1] == 48 && specification(gdn_mode::native48_q48).available) {
++            return gdn_mode::native48_q48;
++        }
++    }
++    const gdn_mode packed = v->ne[1] == 48 ? gdn_mode::packed48 : gdn_mode::packed32;
++    return specification(packed).available ? packed : gdn_mode::unavailable;
++}
++
++bool is_native(gdn_mode mode) {
++    return mode == gdn_mode::native48_q16 || mode == gdn_mode::native48_q48;
++}
++
++// Keep ELF bytes, registration handle and host-stub address stable for process
++// lifetime. Eager execution only; registration precedes the first launch.
++struct gdn_binary {
++    std::vector<char> image;
++    void * handle = nullptr;
++    const gdn_spec & spec;
++    std::atomic_flag logged = ATOMIC_FLAG_INIT;
++
++    explicit gdn_binary(gdn_mode mode) : spec(specification(mode)) {
++        GGML_ASSERT(spec.available);
++        std::ifstream input(spec.path, std::ios::binary | std::ios::ate);
++        if (!input) {
++            GGML_ABORT("Cannot open GDN 910 kernel: %s", spec.path.c_str());
++        }
++        const std::streamoff size = input.tellg();
++        if (size <= 0 || size > MAX_ELF_BYTES) {
++            GGML_ABORT("Invalid GDN 910 ELF size: %lld", static_cast<long long>(size));
++        }
++        image.resize(static_cast<size_t>(size));
++        input.seekg(0);
++        if (!input.read(image.data(), static_cast<std::streamsize>(image.size()))) {
++            GGML_ABORT("Cannot read complete GDN 910 kernel: %s", spec.path.c_str());
++        }
++        rtDevBinary_t binary{RT_DEV_BINARY_MAGIC_ELF, 0, image.data(), image.size()};
++        ACL_CHECK(rtDevBinaryRegister(&binary, &handle));
++        ACL_CHECK(rtFunctionRegister(handle, spec.stub.c_str(), spec.entry.c_str(), spec.entry.c_str(), 0));
++    }
++
++    gdn_binary(const gdn_binary &) = delete;
++    gdn_binary & operator=(const gdn_binary &) = delete;
++};
++
++gdn_binary & kernel(gdn_mode mode) {
++    // C++ static initialization is thread-safe. Do not unregister after ACL teardown.
++    switch (mode) {
++        case gdn_mode::packed32: {
++            static gdn_binary * const instance = new gdn_binary(mode);
++            return *instance;
++        }
++        case gdn_mode::packed48: {
++            static gdn_binary * const instance = new gdn_binary(mode);
++            return *instance;
++        }
++        case gdn_mode::native48_q16: {
++            static gdn_binary * const instance = new gdn_binary(mode);
++            return *instance;
++        }
++        case gdn_mode::native48_q48: {
++            static gdn_binary * const instance = new gdn_binary(mode);
++            return *instance;
++        }
++        case gdn_mode::unavailable:
++            GGML_ABORT("No compatible GDN 910 kernel");
++    }
++    GGML_ABORT("Invalid GDN 910 kernel mode");
++}
++
++void copy_device(aclrtStream stream, void * destination, const void * source, size_t bytes) {
++    ACL_CHECK(aclrtMemcpyAsync(destination, bytes, source, bytes, ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
++}
++
++void * pack_heads(aclrtStream stream, const ggml_tensor * source, char * packed, int64_t heads) {
++    if (source->ne[1] == heads && source->nb[1] == ROW_BYTES) {
++        return source->data;
++    }
++    // GGML repeats q/k heads cyclically, not with repeat-interleave.
++    for (int64_t head = 0; head < heads; ++head) {
++        const size_t source_offset = static_cast<size_t>(head % source->ne[1]) * source->nb[1];
++        copy_device(stream, packed + head * ROW_BYTES,
++                    static_cast<const char *>(source->data) + source_offset, ROW_BYTES);
++    }
++    return packed;
++}
++
++void launch(gdn_binary & binary, std::array<void *, 8> & arguments,
++            int64_t heads, int device, aclrtStream stream) {
++    const uint32_t block_dim = heads == 48 ? 24 : 32;
++    ACL_CHECK(rtKernelLaunch(binary.spec.stub.c_str(), block_dim,
++                            arguments.data(), sizeof(arguments), nullptr, stream));
++    if (!binary.logged.test_and_set(std::memory_order_relaxed)) {
++        GGML_LOG_INFO("ggml_cann_gdn_910: custom GDN launch queued mode=%s heads=%lld device=%d blocks=%u\n",
++                      binary.spec.entry.c_str(), static_cast<long long>(heads), device, block_dim);
++    }
++}
++}  // namespace
++
++bool ggml_cann_supports_gdn_910(const ggml_tensor * op) {
++    if (op == nullptr || op->op != GGML_OP_GATED_DELTA_NET ||
++        op->type != GGML_TYPE_F32 || !ggml_is_contiguous(op) || ggml_get_op_params_i32(op, 0) != 1) {
++        return false;
++    }
++    for (int index = 0; index < 6; ++index) {
++        if (op->src[index] == nullptr || op->src[index]->type != GGML_TYPE_F32) {
++            return false;
++        }
++    }
++    const ggml_tensor * q = op->src[0];
++    const ggml_tensor * k = op->src[1];
++    const ggml_tensor * v = op->src[2];
++    const ggml_tensor * g = op->src[3];
++    const ggml_tensor * b = op->src[4];
++    const ggml_tensor * s = op->src[5];
++    const int64_t heads = v->ne[1];
++    if (heads != 32 && heads != 48) {
++        return false;
++    }
++    for (const ggml_tensor * source : {q, k}) {
++        if (source->ne[0] != WIDTH || source->ne[1] <= 0 || heads % source->ne[1] != 0 ||
++            source->ne[2] != 1 || source->ne[3] != 1 || !ggml_is_contiguous_rows(source)) {
++            return false;
++        }
++    }
++    return shape(v, WIDTH, heads, 1, 1) && ggml_is_contiguous_rows(v) &&
++           shape(g, 1, heads, 1, 1) && ggml_is_contiguous(g) &&
++           shape(b, 1, heads, 1, 1) && ggml_is_contiguous(b) &&
++           shape(s, WIDTH, WIDTH, heads, 1) && ggml_is_contiguous(s) &&
++           shape(op, WIDTH * heads, 1 + WIDTH, 1, 1) &&
++           ggml_nbytes(op) == static_cast<size_t>(heads) * ROW_BYTES * (1 + WIDTH) &&
++           select_mode(op) != gdn_mode::unavailable;
++}
++
++void ggml_cann_gdn_910(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    GGML_ASSERT(ggml_cann_supports_gdn_910(dst));
++    ggml_cann_set_device(ctx.device);
++    const char * soc = aclrtGetSocName();
++    if (soc == nullptr || std::strcmp(soc, "Ascend910B") != 0) {
++        GGML_ABORT("GDN 910 experimental ELF is restricted to legacy Ascend910B");
++    }
++#ifdef USE_ACL_GRAPH
++    if (ctx.acl_graph_mode) {
++        GGML_ABORT("GDN 910 experimental path requires GGML_CANN_ACL_GRAPH=off");
++    }
++#endif
++    const int64_t heads = dst->src[2]->ne[1];
++    const size_t vector_bytes = static_cast<size_t>(heads) * ROW_BYTES;
++    const gdn_mode mode = select_mode(dst);
++    gdn_binary & binary = kernel(mode);
++    aclrtStream stream = ctx.stream();
++
++    if (is_native(mode)) {
++        // The native kernel performs cyclic head mapping and reads compact gates.
++        // All arguments are original device pointers: no staging or D2D copies.
++        std::array<void *, 8> arguments{
++            dst->src[5]->data, dst->src[0]->data, dst->src[1]->data, dst->src[2]->data,
++            dst->src[3]->data, dst->src[4]->data,
++            static_cast<char *>(dst->data) + vector_bytes, dst->data,
++        };
++        launch(binary, arguments, heads, ctx.device, stream);
++        return;
++    }
++
++    const size_t gate_bytes = static_cast<size_t>(heads) * 8 * sizeof(float);
++    ggml_cann_pool_alloc staging(ctx.pool(), 3 * vector_bytes + 2 * gate_bytes);
++    char * base = static_cast<char *>(staging.get());
++    void * q = pack_heads(stream, dst->src[0], base, heads);
++    void * k = pack_heads(stream, dst->src[1], base + vector_bytes, heads);
++    void * v = pack_heads(stream, dst->src[2], base + 2 * vector_bytes, heads);
++    char * gate = base + 3 * vector_bytes;
++    char * beta = gate + gate_bytes;
++    ACL_CHECK(aclrtMemsetAsync(gate, 2 * gate_bytes, 0, 2 * gate_bytes, stream));
++    for (int64_t head = 0; head < heads; ++head) {
++        copy_device(stream, gate + head * 8 * sizeof(float),
++                    static_cast<const char *>(dst->src[3]->data) + head * dst->src[3]->nb[1], sizeof(float));
++        copy_device(stream, beta + head * 8 * sizeof(float),
++                    static_cast<const char *>(dst->src[4]->data) + head * dst->src[4]->nb[1], sizeof(float));
++    }
++    // GGML output: [attention output | updated transposed state].
++    std::array<void *, 8> arguments{
++        dst->src[5]->data, q, k, v, gate, beta,
++        static_cast<char *>(dst->data) + vector_bytes, dst->data,
++    };
++    launch(binary, arguments, heads, ctx.device, stream);
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/gdn_910.h
+@@ -0,0 +1,10 @@
++#pragma once
++
++#include "common.h"
++
++// Experimental legacy-910 ELF paths, configured before starting the process:
++// packed H32: GGML_CANN_GDN_910_BINARY; packed H48: GGML_CANN_GDN_910_BINARY_48.
++// Optional native H48: GGML_CANN_GDN_NATIVE_DIR/gdn_native_h48_q{16,48}.o.
++// A compatible native ELF takes precedence; other layouts use the packed path.
++bool ggml_cann_supports_gdn_910(const ggml_tensor * op);
++void ggml_cann_gdn_910(ggml_backend_cann_context & ctx, ggml_tensor * dst);
+--- /dev/null
++++ b/ggml/src/ggml-cann/ssm_910.cpp
+@@ -0,0 +1,124 @@
++#include "ssm_910.h"
++
++#include <runtime/rt.h>
++
++#include <array>
++#include <atomic>
++#include <cstdlib>
++#include <cstring>
++#include <fstream>
++#include <string>
++#include <vector>
++
++namespace {
++constexpr int64_t KERNEL_WIDTH = 4;
++constexpr int64_t CHANNELS = 10240;
++constexpr uint32_t BLOCKS = 32;
++constexpr std::streamoff MAX_ELF_BYTES = 64 * 1024 * 1024;
++
++bool shape(const ggml_tensor * tensor, int64_t d0, int64_t d1) {
++    return tensor != nullptr && tensor->type == GGML_TYPE_F32 &&
++           tensor->ne[0] == d0 && tensor->ne[1] == d1 &&
++           tensor->ne[2] == 1 && tensor->ne[3] == 1 && ggml_is_contiguous(tensor);
++}
++
++struct ssm_spec {
++    const std::string path;
++    const std::string stub = "ssm_conv_910_ggml_t1";
++    const std::string entry = "ssm_conv_910_t1__kernel0";
++    const bool available;
++
++    ssm_spec() : path(configured_path()), available(readable_elf(path)) {}
++
++private:
++    static std::string configured_path() {
++        const char * value = std::getenv("GGML_CANN_SSM_910_BINARY");
++        return value != nullptr ? value : "";
++    }
++
++    static bool readable_elf(const std::string & path) {
++        if (path.empty()) {
++            return false;
++        }
++        std::ifstream input(path, std::ios::binary | std::ios::ate);
++        if (!input) {
++            return false;
++        }
++        const std::streamoff size = input.tellg();
++        return size > 0 && size <= MAX_ELF_BYTES;
++    }
++};
++
++const ssm_spec & specification() {
++    // The immutable configuration and registration strings outlive ACL teardown.
++    static const ssm_spec * const spec = new ssm_spec();
++    return *spec;
++}
++
++struct ssm_binary {
++    std::vector<char> image;
++    void * handle = nullptr;
++    const ssm_spec & spec;
++    std::atomic_flag logged = ATOMIC_FLAG_INIT;
++
++    ssm_binary() : spec(specification()) {
++        GGML_ASSERT(spec.available);
++        std::ifstream input(spec.path, std::ios::binary | std::ios::ate);
++        if (!input) {
++            GGML_ABORT("Cannot open SSM 910 kernel: %s", spec.path.c_str());
++        }
++        const std::streamoff size = input.tellg();
++        if (size <= 0 || size > MAX_ELF_BYTES) {
++            GGML_ABORT("Invalid SSM 910 ELF size: %lld", static_cast<long long>(size));
++        }
++        image.resize(static_cast<size_t>(size));
++        input.seekg(0);
++        if (!input.read(image.data(), static_cast<std::streamsize>(image.size()))) {
++            GGML_ABORT("Cannot read complete SSM 910 kernel: %s", spec.path.c_str());
++        }
++        rtDevBinary_t binary{RT_DEV_BINARY_MAGIC_ELF, 0, image.data(), image.size()};
++        ACL_CHECK(rtDevBinaryRegister(&binary, &handle));
++        ACL_CHECK(rtFunctionRegister(handle, spec.stub.c_str(), spec.entry.c_str(), spec.entry.c_str(), 0));
++    }
++
++    ssm_binary(const ssm_binary &) = delete;
++    ssm_binary & operator=(const ssm_binary &) = delete;
++};
++
++ssm_binary & kernel() {
++    // Thread-safe initialization; ELF storage stays alive until process exit.
++    static ssm_binary * const instance = new ssm_binary();
++    return *instance;
++}
++}  // namespace
++
++bool ggml_cann_try_ssm_910(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    if (dst == nullptr || dst->op != GGML_OP_SSM_CONV ||
++        !shape(dst, CHANNELS, 1) || !shape(dst->src[0], KERNEL_WIDTH, CHANNELS) ||
++        !shape(dst->src[1], KERNEL_WIDTH, CHANNELS)) {
++        return false;
++    }
++#ifdef USE_ACL_GRAPH
++    if (ctx.acl_graph_mode) {
++        return false;
++    }
++#endif
++    if (!specification().available) {
++        return false;
++    }
++    ggml_cann_set_device(ctx.device);
++    const char * soc = aclrtGetSocName();
++    if (soc == nullptr || std::strcmp(soc, "Ascend910B") != 0) {
++        return false;
++    }
++
++    ssm_binary & binary = kernel();
++    std::array<void *, 3> arguments{dst->src[0]->data, dst->src[1]->data, dst->data};
++    ACL_CHECK(rtKernelLaunch(binary.spec.stub.c_str(), BLOCKS, arguments.data(),
++                            sizeof(arguments), nullptr, ctx.stream()));
++    if (!binary.logged.test_and_set(std::memory_order_relaxed)) {
++        GGML_LOG_INFO("ggml_cann_try_ssm_910: custom SSM launch queued channels=%lld device=%d blocks=%u\n",
++                      static_cast<long long>(CHANNELS), ctx.device, BLOCKS);
++    }
++    return true;
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/ssm_910.h
+@@ -0,0 +1,7 @@
++#pragma once
++
++#include "common.h"
++
++// Optional legacy-910 FP32 SSM decode kernel. Configure its absolute ELF path
++// with GGML_CANN_SSM_910_BINARY before process startup. False selects fallback.
++bool ggml_cann_try_ssm_910(ggml_backend_cann_context & ctx, ggml_tensor * dst);
+--- /dev/null
++++ b/ggml/src/ggml-cann/rms_910.cpp
+@@ -0,0 +1,139 @@
++#include "rms_910.h"
++
++#include <runtime/rt.h>
++
++#include <array>
++#include <atomic>
++#include <cmath>
++#include <cstdlib>
++#include <cstring>
++#include <fstream>
++#include <memory>
++#include <mutex>
++#include <string>
++#include <vector>
++
++namespace {
++constexpr float EPSILON = 1.0e-6f;
++constexpr float L2_EPSILON = EPSILON / 128.0f;
++constexpr std::streamoff MAX_ELF_BYTES = 64 * 1024 * 1024;
++
++struct rms_shape {
++    int64_t width;
++    int64_t rows;
++    int64_t stride;
++    uint32_t blocks;
++    float epsilon;
++};
++
++constexpr std::array<rms_shape, 5> SHAPES{{
++    {5120, 1, 5120, 1, EPSILON}, {128, 48, 128, 32, EPSILON},
++    {256, 24, 512, 24, EPSILON}, {256, 4, 256, 4, EPSILON},
++    {128, 16, 128, 16, L2_EPSILON},
++}};
++
++struct rms_binary {
++    std::vector<char> image;
++    std::string stub;
++    std::string entry;
++    void * handle = nullptr;
++    std::atomic_flag logged = ATOMIC_FLAG_INIT;
++    const rms_shape spec;
++
++    rms_binary(const rms_shape & shape, const std::string & directory) : spec(shape) {
++        const std::string name = "rms_910_w" + std::to_string(spec.width) +
++                                 "_r" + std::to_string(spec.rows) + "_s" + std::to_string(spec.stride) +
++                                 (spec.epsilon == L2_EPSILON ? "_l2" : "");
++        const std::string path = directory + "/" + name + ".o";
++        std::ifstream input(path, std::ios::binary | std::ios::ate);
++        // Missing optional kernels deliberately preserve the official implementation.
++        if (!input) {
++            return;
++        }
++        const std::streamoff size = input.tellg();
++        if (size <= 0 || size > MAX_ELF_BYTES) {
++            GGML_ABORT("Invalid RMS 910 ELF size: %s", path.c_str());
++        }
++        image.resize(static_cast<size_t>(size));
++        input.seekg(0);
++        if (!input.read(image.data(), static_cast<std::streamsize>(image.size()))) {
++            GGML_ABORT("Cannot read complete RMS 910 kernel: %s", path.c_str());
++        }
++        stub = name + "_ggml";
++        entry = name + "__kernel0";
++        rtDevBinary_t binary{RT_DEV_BINARY_MAGIC_ELF, 0, image.data(), image.size()};
++        ACL_CHECK(rtDevBinaryRegister(&binary, &handle));
++        ACL_CHECK(rtFunctionRegister(handle, stub.c_str(), entry.c_str(), entry.c_str(), 0));
++    }
++};
++
++rms_binary * binary(size_t index) {
++    // Registration strings and ELF images must outlive ACL context teardown.
++    struct registry {
++        const std::string directory;
++        std::array<std::once_flag, SHAPES.size()> initialized;
++        std::array<rms_binary *, SHAPES.size()> binaries{};
++        registry() : directory(path()) {}
++        static std::string path() {
++            const char * value = std::getenv("GGML_CANN_RMS_910_DIR");
++            return value == nullptr ? "" : value;
++        }
++    };
++    static registry * const instance = new registry();
++    if (instance->directory.empty()) {
++        return nullptr;
++    }
++    std::call_once(instance->initialized[index], [&] {
++        instance->binaries[index] = new rms_binary(SHAPES[index], instance->directory);
++    });
++    return instance->binaries[index];
++}
++}  // namespace
++
++bool ggml_cann_try_rms_910(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    if (dst == nullptr || dst->op != GGML_OP_RMS_NORM || dst->type != GGML_TYPE_F32 ||
++        dst->src[0] == nullptr || dst->src[0]->type != GGML_TYPE_F32 || !ggml_is_contiguous(dst)) {
++        return false;
++    }
++#ifdef USE_ACL_GRAPH
++    if (ctx.acl_graph_mode) {
++        return false;
++    }
++#endif
++    const ggml_tensor * src = dst->src[0];
++    float epsilon = 0.0f;
++    std::memcpy(&epsilon, dst->op_params, sizeof(epsilon));
++    if (src->nb[0] != sizeof(float) || src->ne[2] != 1 ||
++        src->ne[3] != 1 || !ggml_are_same_shape(src, dst)) {
++        return false;
++    }
++    size_t index = 0;
++    for (; index < SHAPES.size(); ++index) {
++        const rms_shape & spec = SHAPES[index];
++        if (epsilon == spec.epsilon && src->ne[0] == spec.width && src->ne[1] == spec.rows &&
++            src->nb[1] == static_cast<size_t>(spec.stride) * sizeof(float)) {
++            break;
++        }
++    }
++    if (index == SHAPES.size()) {
++        return false;
++    }
++    ggml_cann_set_device(ctx.device);
++    const char * soc = aclrtGetSocName();
++    if (soc == nullptr || std::strcmp(soc, "Ascend910B") != 0) {
++        return false;
++    }
++    rms_binary * const kernel = binary(index);
++    if (kernel == nullptr || kernel->handle == nullptr) {
++        return false;
++    }
++    std::array<void *, 2> arguments{src->data, dst->data};
++    ACL_CHECK(rtKernelLaunch(kernel->stub.c_str(), kernel->spec.blocks, arguments.data(),
++                            sizeof(arguments), nullptr, ctx.stream()));
++    if (!kernel->logged.test_and_set(std::memory_order_relaxed)) {
++        GGML_LOG_INFO("ggml_cann_try_rms_910: custom RMS launch queued width=%lld rows=%lld stride=%lld device=%d\n",
++                      static_cast<long long>(kernel->spec.width), static_cast<long long>(kernel->spec.rows),
++                      static_cast<long long>(kernel->spec.stride), ctx.device);
++    }
++    return true;
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/rms_910.h
+@@ -0,0 +1,7 @@
++#pragma once
++
++#include "common.h"
++
++// Optional directory holding RMS_NORM ELF objects from build_rms_910.py.
++// GGML_CANN_RMS_910_DIR must be set before starting the process.
++bool ggml_cann_try_rms_910(ggml_backend_cann_context & ctx, ggml_tensor * dst);
+--- /dev/null
++++ b/ggml/src/ggml-cann/rope_910.h
+@@ -0,0 +1,28 @@
++#pragma once
++
++#include "ggml.h"
++
++#include <cstdlib>
++#include <cstring>
++
++// This opt-in path intentionally covers Qwen3.5/3.8's F32 IMRoPE only.
++// Keeping a narrow predicate makes other RoPE modes retain their CPU fallback.
++static inline bool ggml_cann_supports_rope_910(const ggml_tensor * op) {
++    static const bool enabled = []() {
++        const char * value = std::getenv("GGML_CANN_ROPE_910_COMPOSITE");
++        return value != nullptr && std::strcmp(value, "1") == 0;
++    }();
++    if (!enabled || op == nullptr || op->op != GGML_OP_ROPE || op->src[0] == nullptr ||
++        op->src[1] == nullptr || op->src[2] != nullptr || op->type != GGML_TYPE_F32 ||
++        op->src[0]->type != GGML_TYPE_F32 || op->src[1]->type != GGML_TYPE_I32) {
++        return false;
++    }
++    const int32_t * p = reinterpret_cast<const int32_t *>(op->op_params);
++    const int dimensions = p[1];
++    const int sections = p[11] + p[12] + p[13] + p[14];
++    return p[2] == GGML_ROPE_TYPE_IMROPE && p[15] == 0 && dimensions > 0 &&
++           dimensions % 2 == 0 && dimensions <= op->ne[0] && op->ne[0] <= 896 &&
++           sections > 0 && sections <= dimensions && p[11] >= 0 && p[12] >= 0 &&
++           p[13] >= 0 && p[14] >= 0 && op->src[0]->nb[0] == sizeof(float) &&
++           op->nb[0] == sizeof(float) && op->src[1]->ne[0] >= 4 * op->ne[2];
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/rope_910.inc
+@@ -0,0 +1,55 @@
++#include "rope_910_native.inc"
++
++// Included from aclnn_ops.cpp after aclnn_rope_cache_init. All arithmetic stays
++// on the NPU; the existing cache generator supplies exact IMRoPE sector rules.
++static void ggml_cann_rope_910_composite(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    GGML_ASSERT(ggml_cann_supports_rope_910(dst));
++    if (ggml_cann_try_rope_910_native(ctx, dst)) return;
++    ggml_tensor * src = dst->src[0];
++    const int64_t rotated = reinterpret_cast<const int32_t *>(dst->op_params)[1];
++    const int64_t half = rotated / 2;
++    int64_t half_ne[GGML_MAX_DIMS] = { half, dst->ne[1], dst->ne[2], dst->ne[3] };
++    int64_t trig_ne[GGML_MAX_DIMS] = { half, 1, dst->ne[2], 1 };
++    size_t trig_nb[GGML_MAX_DIMS] = {
++        sizeof(float), static_cast<size_t>(rotated) * sizeof(float),
++        static_cast<size_t>(rotated) * sizeof(float),
++        static_cast<size_t>(rotated * dst->ne[2]) * sizeof(float),
++    };
++    size_t tmp_nb[GGML_MAX_DIMS];
++    tmp_nb[0] = sizeof(float);
++    for (int dimension = 1; dimension < GGML_MAX_DIMS; ++dimension) {
++        tmp_nb[dimension] = tmp_nb[dimension - 1] * half_ne[dimension - 1];
++    }
++    const size_t half_bytes = static_cast<size_t>(half * dst->ne[1] * dst->ne[2] * dst->ne[3]) * sizeof(float);
++    ggml_cann_pool_alloc products(ctx.pool(), 4 * half_bytes);
++    auto * const product_base = static_cast<char *>(products.get());
++    acl_tensor_ptr a = ggml_cann_create_tensor(product_base, ACL_FLOAT, sizeof(float), half_ne, tmp_nb, GGML_MAX_DIMS);
++    acl_tensor_ptr b = ggml_cann_create_tensor(product_base + half_bytes, ACL_FLOAT, sizeof(float), half_ne, tmp_nb, GGML_MAX_DIMS);
++    acl_tensor_ptr c = ggml_cann_create_tensor(product_base + 2 * half_bytes, ACL_FLOAT, sizeof(float), half_ne, tmp_nb, GGML_MAX_DIMS);
++    acl_tensor_ptr d = ggml_cann_create_tensor(product_base + 3 * half_bytes, ACL_FLOAT, sizeof(float), half_ne, tmp_nb, GGML_MAX_DIMS);
++    acl_tensor_ptr lo = ggml_cann_create_tensor(src->data, ACL_FLOAT, sizeof(float), half_ne, src->nb, GGML_MAX_DIMS);
++    acl_tensor_ptr hi = ggml_cann_create_tensor(static_cast<char *>(src->data) + half * sizeof(float), ACL_FLOAT,
++                                               sizeof(float), half_ne, src->nb, GGML_MAX_DIMS);
++    acl_tensor_ptr out_lo = ggml_cann_create_tensor(dst->data, ACL_FLOAT, sizeof(float), half_ne, dst->nb, GGML_MAX_DIMS);
++    acl_tensor_ptr out_hi = ggml_cann_create_tensor(static_cast<char *>(dst->data) + half * sizeof(float), ACL_FLOAT,
++                                                   sizeof(float), half_ne, dst->nb, GGML_MAX_DIMS);
++    acl_tensor_ptr cosine = ggml_cann_create_tensor(ctx.rope_cache.cos_cache, ACL_FLOAT, sizeof(float), trig_ne, trig_nb, GGML_MAX_DIMS);
++    acl_tensor_ptr sine = ggml_cann_create_tensor(ctx.rope_cache.sin_cache, ACL_FLOAT, sizeof(float), trig_ne, trig_nb, GGML_MAX_DIMS);
++
++    // Read all four products before writing either half, also safe in-place.
++    aclnn_mul(ctx, lo.get(), cosine.get(), a.get());
++    aclnn_mul(ctx, hi.get(), sine.get(), b.get());
++    aclnn_mul(ctx, lo.get(), sine.get(), c.get());
++    aclnn_mul(ctx, hi.get(), cosine.get(), d.get());
++    aclnn_sub(ctx, a.get(), b.get(), out_lo.get());
++    aclnn_add(ctx, c.get(), d.get(), out_hi.get());
++
++    if (rotated < dst->ne[0] && src->data != dst->data) {
++        int64_t tail_ne[GGML_MAX_DIMS] = { dst->ne[0] - rotated, dst->ne[1], dst->ne[2], dst->ne[3] };
++        acl_tensor_ptr in_tail = ggml_cann_create_tensor(static_cast<char *>(src->data) + rotated * sizeof(float),
++            ACL_FLOAT, sizeof(float), tail_ne, src->nb, GGML_MAX_DIMS);
++        acl_tensor_ptr out_tail = ggml_cann_create_tensor(static_cast<char *>(dst->data) + rotated * sizeof(float),
++            ACL_FLOAT, sizeof(float), tail_ne, dst->nb, GGML_MAX_DIMS);
++        cann_copy(ctx, in_tail.get(), out_tail.get());
++    }
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/rope_910_native.inc
+@@ -0,0 +1,83 @@
++#include <runtime/rt.h>
++
++#include <array>
++#include <atomic>
++#include <cstdlib>
++#include <cstring>
++#include <fstream>
++#include <string>
++#include <vector>
++
++namespace rope_910_native_detail {
++static const std::string & directory() {
++    static const std::string path = []() {
++        const char * value = std::getenv("GGML_CANN_ROPE_910_NATIVE_DIR");
++        return value == nullptr ? std::string() : std::string(value);
++    }();
++    return path;
++}
++
++struct binary {
++    std::vector<char> image;
++    std::string stub;
++    std::string entry;
++    uint32_t blocks;
++    void * handle = nullptr;
++    std::atomic_flag logged = ATOMIC_FLAG_INIT;
++
++    explicit binary(int heads) :
++        stub("rope_910_h" + std::to_string(heads) + "_t1_ggml"),
++        entry("rope_910_h" + std::to_string(heads) + "_t1__kernel0"),
++        blocks(static_cast<uint32_t>(heads)) {
++        const std::string path = directory() + "/rope_910_h" + std::to_string(heads) + "_t1.o";
++        std::ifstream input(path, std::ios::binary | std::ios::ate);
++        if (!input) GGML_ABORT("Cannot open native RoPE 910 kernel: %s", path.c_str());
++        const std::streamoff size = input.tellg();
++        if (size <= 0 || size > 64 * 1024 * 1024) GGML_ABORT("Invalid native RoPE 910 ELF size");
++        image.resize(static_cast<size_t>(size));
++        input.seekg(0);
++        if (!input.read(image.data(), static_cast<std::streamsize>(image.size()))) GGML_ABORT("Incomplete native RoPE 910 ELF");
++        rtDevBinary_t descriptor{RT_DEV_BINARY_MAGIC_ELF, 0, image.data(), image.size()};
++        ACL_CHECK(rtDevBinaryRegister(&descriptor, &handle));
++        ACL_CHECK(rtFunctionRegister(handle, stub.c_str(), entry.c_str(), entry.c_str(), 0));
++    }
++};
++
++static binary & kernel(int64_t heads) {
++    if (heads == 4) {
++        static binary * const instance = new binary(4);
++        return *instance;
++    }
++    static binary * const instance = new binary(24);
++    return *instance;
++}
++}
++
++// Called after the existing cache generator, before composite arithmetic.
++static bool ggml_cann_try_rope_910_native(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    using namespace rope_910_native_detail;
++    if (directory().empty() || !ggml_cann_supports_rope_910(dst)) return false;
++#ifdef USE_ACL_GRAPH
++    if (ctx.acl_graph_mode) return false;
++#endif
++    const ggml_tensor * src = dst->src[0];
++    if (dst->ne[0] != 256 || (dst->ne[1] != 4 && dst->ne[1] != 24) ||
++        dst->ne[2] != 1 || dst->ne[3] != 1 ||
++        reinterpret_cast<const int32_t *>(dst->op_params)[1] != 64 ||
++        !ggml_is_contiguous(src) || !ggml_is_contiguous(dst) ||
++        ctx.rope_cache.sin_cache == nullptr || ctx.rope_cache.cos_cache == nullptr ||
++        reinterpret_cast<uintptr_t>(src->data) % 32 != 0 || reinterpret_cast<uintptr_t>(dst->data) % 32 != 0) {
++        return false;
++    }
++    ggml_cann_set_device(ctx.device);
++    const char * soc = aclrtGetSocName();
++    if (soc == nullptr || std::strcmp(soc, "Ascend910B") != 0) return false;
++    binary & selected = kernel(dst->ne[1]);
++    std::array<void *, 4> args{src->data, ctx.rope_cache.sin_cache, ctx.rope_cache.cos_cache, dst->data};
++    ACL_CHECK(rtKernelLaunch(selected.stub.c_str(), selected.blocks, args.data(), sizeof(args), nullptr, ctx.stream()));
++    if (!selected.logged.test_and_set(std::memory_order_relaxed)) {
++        GGML_LOG_INFO("ggml_cann_try_rope_910_native: F32 H=%lld D=256 rot=64 decode queued on device %d\n",
++                      static_cast<long long>(dst->ne[1]), ctx.device);
++    }
++    return true;
++}
+--- /dev/null
++++ b/ggml/src/ggml-cann/setrows_910.inc
+@@ -0,0 +1,101 @@
++#include <runtime/rt.h>
++
++#include <array>
++#include <atomic>
++#include <cstdlib>
++#include <cstring>
++#include <fstream>
++#include <string>
++#include <vector>
++
++namespace setrows_910_detail {
++constexpr int32_t key_marker = 0x53524b31;
++constexpr int32_t value_marker = 0x53525631;
++constexpr uint32_t blocks = 32;
++
++static bool shape(const ggml_tensor * tensor, ggml_type type, int64_t d0, int64_t d1) {
++    return tensor != nullptr && tensor->type == type && tensor->ne[0] == d0 && tensor->ne[1] == d1 &&
++           tensor->ne[2] == 1 && tensor->ne[3] == 1 && ggml_is_contiguous(tensor);
++}
++
++static bool can_read_index_block(const ggml_tensor * index) {
++    if (index->buffer == nullptr || index->data == nullptr) return false;
++    const uintptr_t pointer = reinterpret_cast<uintptr_t>(index->data);
++    const uintptr_t base = reinterpret_cast<uintptr_t>(ggml_backend_buffer_get_base(index->buffer));
++    const size_t bytes = ggml_backend_buffer_get_size(index->buffer);
++    return pointer % 32 == 0 && pointer >= base && pointer - base <= bytes && bytes - (pointer - base) >= 32;
++}
++
++static const std::string & directory() {
++    static const std::string path = []() {
++        const char * value = std::getenv("GGML_CANN_SETROWS_910_DIR");
++        return value == nullptr ? std::string() : std::string(value);
++    }();
++    return path;
++}
++
++struct binary {
++    std::vector<char> image;
++    std::string stub;
++    std::string entry;
++    void * handle = nullptr;
++    std::atomic_flag logged = ATOMIC_FLAG_INIT;
++
++    explicit binary(bool value) : stub(value ? "setrows_v_910_t1_ggml" : "setrows_k_910_t1_ggml"),
++        entry(value ? "setrows_v_910_t1__kernel0" : "setrows_k_910_t1__kernel0") {
++        const std::string path = directory() + (value ? "/setrows_v_910_t1.o" : "/setrows_k_910_t1.o");
++        std::ifstream input(path, std::ios::binary | std::ios::ate);
++        if (!input) GGML_ABORT("Cannot open SET_ROWS 910 kernel: %s", path.c_str());
++        const std::streamoff size = input.tellg();
++        if (size <= 0 || size > 64 * 1024 * 1024) GGML_ABORT("Invalid SET_ROWS 910 ELF size");
++        image.resize(static_cast<size_t>(size));
++        input.seekg(0);
++        if (!input.read(image.data(), static_cast<std::streamsize>(image.size()))) GGML_ABORT("Incomplete SET_ROWS 910 ELF");
++        rtDevBinary_t descriptor{RT_DEV_BINARY_MAGIC_ELF, 0, image.data(), image.size()};
++        ACL_CHECK(rtDevBinaryRegister(&descriptor, &handle));
++        ACL_CHECK(rtFunctionRegister(handle, stub.c_str(), entry.c_str(), entry.c_str(), 0));
++    }
++};
++
++static binary & kernel(bool value) {
++    if (value) {
++        static binary * const instance = new binary(true);
++        return *instance;
++    }
++    static binary * const instance = new binary(false);
++    return *instance;
++}
++}
++
++static bool ggml_cann_try_setrows_910(ggml_backend_cann_context & ctx, ggml_tensor * dst) {
++    using namespace setrows_910_detail;
++    if (directory().empty() || dst == nullptr || dst->op != GGML_OP_SET_ROWS) return false;
++#ifdef USE_ACL_GRAPH
++    if (ctx.acl_graph_mode) return false;
++#endif
++    int32_t marker = 0;
++    std::memcpy(&marker, dst->op_params, sizeof(marker));
++    const bool value = marker == value_marker;
++    if (!value && marker != key_marker) return false;
++    ggml_tensor * x = dst->src[0];
++    ggml_tensor * index = dst->src[1];
++    if (!shape(dst, GGML_TYPE_F16, value ? 1 : 1024, value ? 262144 : 256) ||
++        !shape(x, GGML_TYPE_F32, value ? 1 : 1024, value ? 1024 : 1) ||
++        !shape(index, GGML_TYPE_I64, value ? 1024 : 1, 1) || !can_read_index_block(index) ||
++        reinterpret_cast<uintptr_t>(x->data) % 32 != 0 || reinterpret_cast<uintptr_t>(dst->data) % 32 != 0) return false;
++    ggml_cann_set_device(ctx.device);
++    const char * soc = aclrtGetSocName();
++    if (soc == nullptr || std::strcmp(soc, "Ascend910B") != 0) return false;
++    binary & selected = kernel(value);
++    if (value) {
++        std::array<void *, 4> args{x->data, index->data, dst->data, dst->data};
++        ACL_CHECK(rtKernelLaunch(selected.stub.c_str(), blocks, args.data(), sizeof(args), nullptr, ctx.stream()));
++    } else {
++        std::array<void *, 3> args{x->data, index->data, dst->data};
++        ACL_CHECK(rtKernelLaunch(selected.stub.c_str(), blocks, args.data(), sizeof(args), nullptr, ctx.stream()));
++    }
++    if (!selected.logged.test_and_set(std::memory_order_relaxed)) {
++        GGML_LOG_INFO("ggml_cann_try_setrows_910: native %s decode update queued on device %d\n", value ? "V" : "K", ctx.device);
++    }
++    return true;
++}
+--- a/src/llama-kv-cache.cpp
++++ b/src/llama-kv-cache.cpp
+@@ -1347,7 +1347,14 @@
+     }
+ 
+     // store the current K values into the cache
+-    return ggml_set_rows(ctx, k, k_cur, k_idxs);
++    ggml_tensor * result = ggml_set_rows(ctx, k, k_cur, k_idxs);
++    // Legacy-910 specialization marker: these indices come from set_input_k_idxs.
++    if (n_stream == 1 && n_tokens == 1 && get_size() == 256 && n_embd_gqa == 1024 &&
++        k->type == GGML_TYPE_F16 && k_cur->type == GGML_TYPE_F32) {
++        const int32_t marker = 0x53524b31;
++        std::memcpy(result->op_params, &marker, sizeof(marker));
++    }
++    return result;
+ }
+ 
+ ggml_tensor * llama_kv_cache::cpy_v(ggml_context * ctx, ggml_tensor * v_cur, ggml_tensor * v_idxs, int32_t il, const slot_info & sinfo) const {
+@@ -1403,7 +1410,14 @@
+ 
+     v_cur = ggml_reshape_2d(ctx, v_cur, 1, ggml_nelements(v_cur));
+ 
+-    return ggml_set_rows(ctx, v_view, v_cur, v_idxs);
++    ggml_tensor * result = ggml_set_rows(ctx, v_view, v_cur, v_idxs);
++    // Provenance: set_input_v_idxs generates j*256+position for this exact branch.
++    if (n_stream == 1 && n_tokens == 1 && get_size() == 256 && n_embd_gqa == 1024 &&
++        hparams.n_embd_v_gqa_max() == 1024 && v->type == GGML_TYPE_F16 && v_cur->type == GGML_TYPE_F32) {
++        const int32_t marker = 0x53525631;
++        std::memcpy(result->op_params, &marker, sizeof(marker));
++    }
++    return result;
+ }
+ 
+ ggml_tensor * llama_kv_cache::build_input_k_idxs(ggml_context * ctx, const llama_ubatch & ubatch) const {

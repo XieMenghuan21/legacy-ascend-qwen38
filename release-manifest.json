@@ -1,0 +1,52 @@
+{
+  "status": "experimental-hardware-specific-release",
+  "model": {
+    "architecture": "qwen35",
+    "name": "Qwen3.8-27B",
+    "weight_origin": "Q4 GGUF dequantized to FP16 storage; Q4 quantization loss retained",
+    "source_url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF",
+    "original_q4_sha256": "322e194ff79741c7baa497c240f677f54b201b0efab44ca8e50f122b39123482",
+    "conversion_command": "qwen38-910 convert-weights INPUT.gguf OUTPUT.gguf",
+    "expanded_f16_sha256": "e764e5f4dc1687feb4ddbb23fb48739c14b16177432e3513b9c62ae31be71945",
+    "expanded_f16_bytes": 54657735584
+  },
+  "hardware": {
+    "architecture": "aarch64",
+    "soc_name": "Ascend910B",
+    "generation": "original Ascend 910, not Atlas A2 B1/B2",
+    "npu_count_for_model": 6,
+    "hbm_per_npu_gib_class": 32,
+    "host_driver": "25.5.2",
+    "container_cann": "8.5.0"
+  },
+  "sources": {
+    "llama_cpp_url": "https://github.com/ggml-org/llama.cpp",
+    "llama_cpp_commit": "895c045fd104ced72132160245edcd6a86e50ba0",
+    "llama_cpp_archive_sha256": "d4a25fcda0990bdee592492315324ba1db3eaf4850bad5a3cd96bec4b3c18dc2",
+    "llama_cpp_patch_sha256": "3db188b74c8c6312217331abd559619de655c0ae26ea0cefa238bdd042cc805e",
+    "opbase_url": "https://gitcode.com/cann/opbase",
+    "opbase_base_commit": "b27e949de1ce29df366a279adf3976f2660e669c",
+    "opbase_cache_fix_commit": "f37e88e9525fac93214acd6fc652d9c69e191e02",
+    "llama_cpp_source_tree_sha256": "f1ad17b5702cf47a4d23a39e3ac0a89867d4573ac9a75cbb1d4dd697f1886aab"
+  },
+  "container": {
+    "base_image": "explicit build argument BASE_IMAGE; compatible original-910 CANN 8.5.0 SDK image required",
+    "validation_report": "benchmarks/image-validation.json",
+    "base_image_id_in_test": "sha256:3c52b8cf26336a45f1df0764f7246bc83e24c7b68df300ad3d25f6ddd1e5ca72"
+  },
+  "benchmark": {
+    "context_tokens": 256,
+    "requested_output_tokens": 64,
+    "request_concurrency": 1,
+    "profile_sync_enabled": false,
+    "summary_path": "benchmarks/results.json"
+  },
+  "cache_fix": {
+    "sha256": "344f759c370ab28b08ce38d73aa2e2b464a5ce84a139a7d726704e879570c324",
+    "original_build_sha256": "3a6ed3baeaed2ff69ddfc264461433352697e64c7463be52caf41a26cf4bf9da",
+    "rpath": "/usr/local/Ascend/cann/lib64",
+    "rpath_sanitizer": "scripts/sanitize-cache-rpath.py",
+    "source_and_build": "docs/CACHE_FIX.md",
+    "license": "CANN Open Software License Agreement 2.0"
+  }
+}

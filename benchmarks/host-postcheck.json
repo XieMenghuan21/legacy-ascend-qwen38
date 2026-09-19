@@ -1,0 +1,14 @@
+{
+  "all_eight_npus_health": "OK",
+  "temperature_celsius_min_max": [
+    36,
+    41
+  ],
+  "experimental_devices_2_through_7_released": true,
+  "existing_api_services_arithmetic_checks": {
+    "service_A": "391",
+    "service_B": "391"
+  },
+  "host_driver_modified": false,
+  "sdk_original_library_replaced": false
+}

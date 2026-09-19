@@ -1,0 +1,492 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+Sending build context to Docker daemon  179.5MB
+
+Step 1/34 : ARG BASE_IMAGE
+Step 2/34 : FROM ${BASE_IMAGE} AS build
+ ---> 3c52b8cf2633
+Step 3/34 : ARG BUILD_JOBS=8
+ ---> Running in f47f9cc00f17
+ ---> Removed intermediate container f47f9cc00f17
+ ---> d560be9078ab
+Step 4/34 : ARG CANN_ENV=/usr/local/Ascend/cann/set_env.sh
+ ---> Running in 20b382cdfd86
+ ---> Removed intermediate container 20b382cdfd86
+ ---> 5802b450431b
+Step 5/34 : ENV CANN_ENV=${CANN_ENV}
+ ---> Running in 099fc0d71d76
+ ---> Removed intermediate container 099fc0d71d76
+ ---> 977558e793fd
+Step 6/34 : SHELL ["/bin/bash", "-c"]
+ ---> Running in 4aa05ee826a3
+ ---> Removed intermediate container 4aa05ee826a3
+ ---> 3ac04946b186
+Step 7/34 : WORKDIR /build/release
+ ---> Running in 8b4597e2bbe0
+ ---> Removed intermediate container 8b4597e2bbe0
+ ---> 35ccd3d2e9bd
+Step 8/34 : COPY build-inputs/llama.cpp/ /build/llama.cpp/
+ ---> 019f3ef55b2c
+Step 9/34 : COPY patches/ /build/release/patches/
+ ---> dee1b4ab5e0f
+Step 10/34 : COPY src/ /build/release/src/
+ ---> 8f9acd822eb7
+Step 11/34 : COPY tests/ /build/release/tests/
+ ---> 7ab6d9f352de
+Step 12/34 : COPY tools/ /build/release/tools/
+ ---> 5009486b53d4
+Step 13/34 : COPY artifacts/cache-fix/libnnopbase.so /build/release/artifacts/cache-fix/libnnopbase.so
+ ---> fd4680dfee2a
+Step 14/34 : COPY scripts/ /build/release/scripts/
+ ---> 295b694d06de
+Step 15/34 : COPY release-manifest.json /build/release/release-manifest.json
+ ---> a266d7ae28a3
+Step 16/34 : COPY licenses/ /build/release/licenses/
+ ---> 04b646817c70
+Step 17/34 : COPY THIRD_PARTY.md /build/release/THIRD_PARTY.md
+ ---> 41c1089aab60
+Step 18/34 : COPY LICENSE /build/release/LICENSE
+ ---> 43841b1364aa
+Step 19/34 : RUN test "$(uname -m)" = aarch64  && test -f "$CANN_ENV"  && source "$CANN_ENV"  && command -v cmake >/dev/null  && command -v g++ >/dev/null  && command -v python3 >/dev/null  && python3 -c 'from tbe import tik'  && BUILD_JOBS="$BUILD_JOBS" bash scripts/build-release.sh  && test -x /opt/qwen38-910/bin/model-benchmark  && test -d /opt/qwen38-910/kernel_meta
+ ---> Running in 353b60c80f1b
+f1ad17b5702cf47a4d23a39e3ac0a89867d4573ac9a75cbb1d4dd697f1886aab
+-- The C compiler identification is GNU 12.3.1
+-- The CXX compiler identification is GNU 12.3.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- llama.cpp version: 0.4.0-dev
+CMAKE_BUILD_TYPE=Release
+-- Found Git: /usr/bin/git (found version "2.43.0") 
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+-- The ASM compiler identification is GNU
+-- Found assembler: /usr/bin/cc
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: aarch64
+-- GGML_SYSTEM_ARCH: ARM
+-- Found OpenMP_C: -fopenmp (found version "4.5") 
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5")  
+-- Including CPU backend
+-- ARM detected
+-- Performing Test GGML_COMPILER_SUPPORTS_FP16_FORMAT_I3E
+-- Performing Test GGML_COMPILER_SUPPORTS_FP16_FORMAT_I3E - Failed
+-- ARM detected flags: -mcpu=tsv110+dotprod+fp16fml+ssbs
+-- Performing Test GGML_MACHINE_SUPPORTS_dotprod
+-- Performing Test GGML_MACHINE_SUPPORTS_dotprod - Success
+-- Performing Test GGML_MACHINE_SUPPORTS_i8mm
+-- Performing Test GGML_MACHINE_SUPPORTS_i8mm - Failed
+-- Performing Test GGML_MACHINE_SUPPORTS_noi8mm
+-- Performing Test GGML_MACHINE_SUPPORTS_noi8mm - Success
+-- Performing Test GGML_MACHINE_SUPPORTS_sve
+-- Performing Test GGML_MACHINE_SUPPORTS_sve - Failed
+-- Performing Test GGML_MACHINE_SUPPORTS_nosve
+-- Performing Test GGML_MACHINE_SUPPORTS_nosve - Success
+-- Performing Test GGML_MACHINE_SUPPORTS_sme
+-- Performing Test GGML_MACHINE_SUPPORTS_sme - Failed
+-- Performing Test GGML_MACHINE_SUPPORTS_nosme
+-- Performing Test GGML_MACHINE_SUPPORTS_nosme - Failed
+-- Checking for ARM features using flags:
+--   -U__ARM_FEATURE_MATMUL_INT8
+--   -U__ARM_FEATURE_SVE
+--   -mcpu=tsv110+dotprod+fp16fml+ssbs+dotprod+noi8mm+nosve
+-- Performing Test HAVE_DOTPROD
+-- Performing Test HAVE_DOTPROD - Success
+-- Performing Test HAVE_SVE
+-- Performing Test HAVE_SVE - Failed
+-- Performing Test HAVE_MATMUL_INT8
+-- Performing Test HAVE_MATMUL_INT8 - Failed
+-- Performing Test HAVE_FMA
+-- Performing Test HAVE_FMA - Success
+-- Performing Test HAVE_FP16_VECTOR_ARITHMETIC
+-- Performing Test HAVE_FP16_VECTOR_ARITHMETIC - Success
+-- Performing Test HAVE_SME
+-- Performing Test HAVE_SME - Failed
+-- Adding CPU backend variant ggml-cpu: -U__ARM_FEATURE_MATMUL_INT8;-U__ARM_FEATURE_SVE;-mcpu=tsv110+dotprod+fp16fml+ssbs+dotprod+noi8mm+nosve 
+-- CANN: SOC_VERSION =  ascend910b
+-- CANN: USE_ACL_GRAPH is disabled.
+-- CANN: CANN_INCLUDE_DIRS =  /usr/local/Ascend/cann-8.5.0/include;/usr/local/Ascend/cann-8.5.0/include/aclnn;/usr/local/Ascend/cann-8.5.0/acllib/include;/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc;/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime;/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling
+-- CANN: CANN_LIBRARIES =  ascendcl;runtime;nnopbase;opapi;acl_op_compiler
+-- Including CANN backend
+-- ggml version: 0.23.0
+-- ggml commit:  unknown
+-- Configuring done (4.9s)
+-- Generating done (0.1s)
+-- Build files have been written to: /build/llama-build
+[  2%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o
+[  2%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml.c.o
+[  2%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml.cpp.o
+[  2%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o
+[  3%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-backend-meta.cpp.o
+[  3%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o
+[  3%] Building C object ggml/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o
+[  3%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o
+[  4%] Building CXX object ggml/src/CMakeFiles/ggml-base.dir/gguf.cpp.o
+[  4%] Linking CXX shared library ../../bin/libggml-base.so
+[  4%] Built target ggml-base
+[  7%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/acl_tensor.cpp.o
+[  7%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/aclnn_ops.cpp.o
+[  7%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/ggml-cann.cpp.o
+[  7%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.c.o
+[  7%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/gdn_910.cpp.o
+[  9%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/rms_910.cpp.o
+[  9%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.cpp.o
+[  9%] Building CXX object ggml/src/ggml-cann/CMakeFiles/ggml-cann.dir/ssm_910.cpp.o
+[  9%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/repack.cpp.o
+[ 10%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/hbm.cpp.o
+[ 10%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/iqp.cpp.o
+[ 10%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/quants.c.o
+[ 10%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/traits.cpp.o
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/ssm_910.h:3,
+                 from /build/llama.cpp/ggml/src/ggml-cann/ssm_910.cpp:1:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/gdn_910.h:3,
+                 from /build/llama.cpp/ggml/src/ggml-cann/gdn_910.cpp:1:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/acl_tensor.h:26,
+                 from /build/llama.cpp/ggml/src/ggml-cann/acl_tensor.cpp:23:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/rms_910.h:3,
+                 from /build/llama.cpp/ggml/src/ggml-cann/rms_910.cpp:1:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/rms_910.h:3,
+                 from /build/llama.cpp/ggml/src/ggml-cann/aclnn_ops.cpp:1:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+In file included from /usr/local/Ascend/cann-8.5.0/include/acl/acl_op.h:15,
+                 from /usr/local/Ascend/cann-8.5.0/include/acl/acl.h:15,
+                 from /build/llama.cpp/ggml/src/ggml-cann/../ggml-cann/common.h:30,
+                 from /build/llama.cpp/ggml/src/ggml-cann/../ggml-cann/acl_tensor.h:26,
+                 from /build/llama.cpp/ggml/src/ggml-cann/../ggml-cann/aclnn_ops.h:26,
+                 from /build/llama.cpp/ggml/src/ggml-cann/ggml-cann.cpp:28:
+/usr/local/Ascend/cann-8.5.0/include/acl/acl_dump.h:34:24: warning: ISO C++ forbids zero-size array 'dataBuf' [-Wpedantic]
+   34 |     uint8_t    dataBuf[0];                       // data buffer
+      |                        ^
+[ 11%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/amx.cpp.o
+In file included from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/prof_common.h:19,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/toolchain/prof_api.h:21,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/base.h:16,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/rt.h:14,
+                 from /build/llama.cpp/ggml/src/ggml-cann/rms_910.cpp:3:
+/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/aprof_pub.h:454:19: warning: ISO C++ forbids zero-size array 'data' [-Wpedantic]
+  454 |     uint8_t  data[0];
+      |                   ^
+In file included from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/prof_common.h:19,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/toolchain/prof_api.h:21,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/base.h:16,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/rt.h:14,
+                 from /build/llama.cpp/ggml/src/ggml-cann/gdn_910.cpp:3:
+/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/aprof_pub.h:454:19: warning: ISO C++ forbids zero-size array 'data' [-Wpedantic]
+  454 |     uint8_t  data[0];
+      |                   ^
+In file included from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/prof_common.h:19,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/toolchain/prof_api.h:21,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/base.h:16,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/rt.h:14,
+                 from /build/llama.cpp/ggml/src/ggml-cann/ssm_910.cpp:3:
+/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/aprof_pub.h:454:19: warning: ISO C++ forbids zero-size array 'data' [-Wpedantic]
+  454 |     uint8_t  data[0];
+      |                   ^
+[ 11%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/mmq.cpp.o
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/binary-ops.cpp.o
+In file included from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/prof_common.h:19,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/toolchain/prof_api.h:21,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/base.h:16,
+                 from /usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/runtime/runtime/rt.h:14,
+                 from /build/llama.cpp/ggml/src/ggml-cann/setrows_910.inc:1,
+                 from /build/llama.cpp/ggml/src/ggml-cann/aclnn_ops.cpp:2096:
+/usr/local/Ascend/cann-8.5.0/aarch64-linux/pkg_inc/profiling/aprof_pub.h:454:19: warning: ISO C++ forbids zero-size array 'data' [-Wpedantic]
+  454 |     uint8_t  data[0];
+      |                   ^
+[ 12%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/unary-ops.cpp.o
+[ 13%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/vec.cpp.o
+[ 13%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ops.cpp.o
+[ 13%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/llamafile/sgemm.cpp.o
+[ 14%] Building C object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/quants.c.o
+[ 14%] Building CXX object ggml/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/repack.cpp.o
+[ 14%] Linking CXX shared library ../../../bin/libggml-cann.so
+[ 14%] Built target ggml-cann
+[ 15%] Linking CXX shared library ../../bin/libggml-cpu.so
+[ 15%] Built target ggml-cpu
+[ 15%] Building CXX object ggml/src/CMakeFiles/ggml.dir/ggml-backend-reg.cpp.o
+[ 15%] Building CXX object ggml/src/CMakeFiles/ggml.dir/ggml-backend-dl.cpp.o
+[ 16%] Linking CXX shared library ../../bin/libggml.so
+[ 16%] Built target ggml
+[ 18%] Building CXX object src/CMakeFiles/llama.dir/llama-batch.cpp.o
+[ 18%] Building CXX object src/CMakeFiles/llama.dir/llama-chat.cpp.o
+[ 18%] Building CXX object src/CMakeFiles/llama.dir/llama.cpp.o
+[ 18%] Building CXX object src/CMakeFiles/llama.dir/llama-arch.cpp.o
+[ 18%] Building CXX object src/CMakeFiles/llama.dir/llama-adapter.cpp.o
+[ 20%] Building CXX object src/CMakeFiles/llama.dir/llama-context.cpp.o
+[ 20%] Building CXX object src/CMakeFiles/llama.dir/llama-grammar.cpp.o
+[ 20%] Building CXX object src/CMakeFiles/llama.dir/llama-cparams.cpp.o
+[ 20%] Building CXX object src/CMakeFiles/llama.dir/llama-graph.cpp.o
+[ 21%] Building CXX object src/CMakeFiles/llama.dir/llama-io.cpp.o
+[ 21%] Building CXX object src/CMakeFiles/llama.dir/llama-hparams.cpp.o
+[ 21%] Building CXX object src/CMakeFiles/llama.dir/llama-impl.cpp.o
+[ 21%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache.cpp.o
+[ 22%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-iswa.cpp.o
+[ 22%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsa.cpp.o
+[ 23%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsa-iswa.cpp.o
+[ 23%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-msa.cpp.o
+[ 24%] Building CXX object src/CMakeFiles/llama.dir/llama-kv-cache-dsv4.cpp.o
+[ 24%] Building CXX object src/CMakeFiles/llama.dir/llama-memory.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid-iswa.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-hybrid-idx.cpp.o
+[ 26%] Building CXX object src/CMakeFiles/llama.dir/llama-memory-recurrent.cpp.o
+[ 26%] Building CXX object src/CMakeFiles/llama.dir/llama-mmap.cpp.o
+[ 27%] Building CXX object src/CMakeFiles/llama.dir/llama-model-loader.cpp.o
+[ 27%] Building CXX object src/CMakeFiles/llama.dir/llama-model-saver.cpp.o
+[ 28%] Building CXX object src/CMakeFiles/llama.dir/llama-model.cpp.o
+[ 28%] Building CXX object src/CMakeFiles/llama.dir/llama-quant.cpp.o
+[ 28%] Building CXX object src/CMakeFiles/llama.dir/llama-sampler.cpp.o
+[ 29%] Building CXX object src/CMakeFiles/llama.dir/llama-vocab.cpp.o
+[ 29%] Building CXX object src/CMakeFiles/llama.dir/unicode-data.cpp.o
+[ 30%] Building CXX object src/CMakeFiles/llama.dir/unicode.cpp.o
+[ 30%] Building CXX object src/CMakeFiles/llama.dir/models/afmoe.cpp.o
+[ 31%] Building CXX object src/CMakeFiles/llama.dir/models/apertus.cpp.o
+[ 31%] Building CXX object src/CMakeFiles/llama.dir/models/arcee.cpp.o
+[ 32%] Building CXX object src/CMakeFiles/llama.dir/models/arctic.cpp.o
+[ 32%] Building CXX object src/CMakeFiles/llama.dir/models/arwkv7.cpp.o
+[ 32%] Building CXX object src/CMakeFiles/llama.dir/models/baichuan.cpp.o
+[ 34%] Building CXX object src/CMakeFiles/llama.dir/models/bailingmoe.cpp.o
+[ 34%] Building CXX object src/CMakeFiles/llama.dir/models/bailingmoe2.cpp.o
+[ 35%] Building CXX object src/CMakeFiles/llama.dir/models/bailingmoe3.cpp.o
+[ 35%] Building CXX object src/CMakeFiles/llama.dir/models/bert.cpp.o
+[ 36%] Building CXX object src/CMakeFiles/llama.dir/models/bitnet.cpp.o
+[ 36%] Building CXX object src/CMakeFiles/llama.dir/models/bloom.cpp.o
+[ 36%] Building CXX object src/CMakeFiles/llama.dir/models/chameleon.cpp.o
+[ 37%] Building CXX object src/CMakeFiles/llama.dir/models/chatglm.cpp.o
+[ 37%] Building CXX object src/CMakeFiles/llama.dir/models/clip.cpp.o
+[ 38%] Building CXX object src/CMakeFiles/llama.dir/models/codeshell.cpp.o
+[ 38%] Building CXX object src/CMakeFiles/llama.dir/models/cogvlm.cpp.o
+[ 39%] Building CXX object src/CMakeFiles/llama.dir/models/cohere2.cpp.o
+[ 39%] Building CXX object src/CMakeFiles/llama.dir/models/cohere2moe.cpp.o
+[ 40%] Building CXX object src/CMakeFiles/llama.dir/models/command-r.cpp.o
+[ 40%] Building CXX object src/CMakeFiles/llama.dir/models/dbrx.cpp.o
+[ 40%] Building CXX object src/CMakeFiles/llama.dir/models/deci.cpp.o
+[ 41%] Building CXX object src/CMakeFiles/llama.dir/models/deepseek.cpp.o
+[ 41%] Building CXX object src/CMakeFiles/llama.dir/models/deepseek2.cpp.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/models/deepseek2ocr.cpp.o
+[ 42%] Building CXX object src/CMakeFiles/llama.dir/models/deepseek32.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/models/deepseek4.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/models/delta-net-base.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/llama.dir/models/dflash.cpp.o
+[ 44%] Building CXX object src/CMakeFiles/llama.dir/models/dots1.cpp.o
+[ 44%] Building CXX object src/CMakeFiles/llama.dir/models/dots3note.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/models/dream.cpp.o
+[ 45%] Building CXX object src/CMakeFiles/llama.dir/models/eagle3.cpp.o
+[ 46%] Building CXX object src/CMakeFiles/llama.dir/models/ernie4-5-moe.cpp.o
+[ 46%] Building CXX object src/CMakeFiles/llama.dir/models/ernie4-5.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/models/eurobert.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/models/exaone-moe.cpp.o
+[ 47%] Building CXX object src/CMakeFiles/llama.dir/models/exaone.cpp.o
+[ 48%] Building CXX object src/CMakeFiles/llama.dir/models/exaone4.cpp.o
+[ 48%] Building CXX object src/CMakeFiles/llama.dir/models/falcon-h1.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/models/falcon.cpp.o
+[ 49%] Building CXX object src/CMakeFiles/llama.dir/models/gemma-embedding.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/models/gemma.cpp.o
+[ 50%] Building CXX object src/CMakeFiles/llama.dir/models/gemma2.cpp.o
+[ 51%] Building CXX object src/CMakeFiles/llama.dir/models/gemma3.cpp.o
+[ 51%] Building CXX object src/CMakeFiles/llama.dir/models/gemma3n.cpp.o
+[ 51%] Building CXX object src/CMakeFiles/llama.dir/models/gemma4-assistant.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/models/gemma4.cpp.o
+[ 52%] Building CXX object src/CMakeFiles/llama.dir/models/glm-dsa.cpp.o
+[ 53%] Building CXX object src/CMakeFiles/llama.dir/models/glm4-moe.cpp.o
+[ 53%] Building CXX object src/CMakeFiles/llama.dir/models/glm4.cpp.o
+[ 54%] Building CXX object src/CMakeFiles/llama.dir/models/gpt2.cpp.o
+[ 54%] Building CXX object src/CMakeFiles/llama.dir/models/gptneox.cpp.o
+[ 54%] Building CXX object src/CMakeFiles/llama.dir/models/granite-hybrid.cpp.o
+[ 55%] Building CXX object src/CMakeFiles/llama.dir/models/granite-moe.cpp.o
+[ 55%] Building CXX object src/CMakeFiles/llama.dir/models/granite-swa.cpp.o
+[ 56%] Building CXX object src/CMakeFiles/llama.dir/models/granite-switch.cpp.o
+[ 56%] Building CXX object src/CMakeFiles/llama.dir/models/granite.cpp.o
+[ 57%] Building CXX object src/CMakeFiles/llama.dir/models/grok.cpp.o
+[ 57%] Building CXX object src/CMakeFiles/llama.dir/models/grovemoe.cpp.o
+[ 58%] Building CXX object src/CMakeFiles/llama.dir/models/hunyuan-dense.cpp.o
+[ 58%] Building CXX object src/CMakeFiles/llama.dir/models/hunyuan-moe.cpp.o
+[ 58%] Building CXX object src/CMakeFiles/llama.dir/models/hunyuan-vl.cpp.o
+[ 59%] Building CXX object src/CMakeFiles/llama.dir/models/hy-v3.cpp.o
+[ 59%] Building CXX object src/CMakeFiles/llama.dir/models/hy-v4.cpp.o
+[ 60%] Building CXX object src/CMakeFiles/llama.dir/models/internlm2.cpp.o
+[ 60%] Building CXX object src/CMakeFiles/llama.dir/models/jais.cpp.o
+[ 61%] Building CXX object src/CMakeFiles/llama.dir/models/jais2.cpp.o
+[ 61%] Building CXX object src/CMakeFiles/llama.dir/models/jamba.cpp.o
+[ 61%] Building CXX object src/CMakeFiles/llama.dir/models/jina-bert-v2.cpp.o
+[ 62%] Building CXX object src/CMakeFiles/llama.dir/models/jina-bert-v3.cpp.o
+[ 62%] Building CXX object src/CMakeFiles/llama.dir/models/kimi-k3.cpp.o
+[ 63%] Building CXX object src/CMakeFiles/llama.dir/models/kimi-linear.cpp.o
+[ 63%] Building CXX object src/CMakeFiles/llama.dir/models/laguna.cpp.o
+[ 64%] Building CXX object src/CMakeFiles/llama.dir/models/lfm2.cpp.o
+[ 65%] Building CXX object src/CMakeFiles/llama.dir/models/lfm2moe.cpp.o
+[ 65%] Building CXX object src/CMakeFiles/llama.dir/models/llada-moe.cpp.o
+[ 65%] Building CXX object src/CMakeFiles/llama.dir/models/llada.cpp.o
+[ 65%] Building CXX object src/CMakeFiles/llama.dir/models/llama-embed.cpp.o
+[ 67%] Building CXX object src/CMakeFiles/llama.dir/models/llama.cpp.o
+[ 67%] Building CXX object src/CMakeFiles/llama.dir/models/llama4.cpp.o
+[ 68%] Building CXX object src/CMakeFiles/llama.dir/models/maincoder.cpp.o
+[ 68%] Building CXX object src/CMakeFiles/llama.dir/models/mamba-base.cpp.o
+[ 69%] Building CXX object src/CMakeFiles/llama.dir/models/mamba.cpp.o
+[ 69%] Building CXX object src/CMakeFiles/llama.dir/models/mamba2.cpp.o
+[ 69%] Building CXX object src/CMakeFiles/llama.dir/models/mellum.cpp.o
+[ 70%] Building CXX object src/CMakeFiles/llama.dir/models/mimo2.cpp.o
+[ 70%] Building CXX object src/CMakeFiles/llama.dir/models/minicpm.cpp.o
+[ 71%] Building CXX object src/CMakeFiles/llama.dir/models/minicpm3.cpp.o
+[ 71%] Building CXX object src/CMakeFiles/llama.dir/models/minimax-01.cpp.o
+[ 72%] Building CXX object src/CMakeFiles/llama.dir/models/minimax-m2.cpp.o
+[ 72%] Building CXX object src/CMakeFiles/llama.dir/models/minimax-m3.cpp.o
+[ 73%] Building CXX object src/CMakeFiles/llama.dir/models/mistral3.cpp.o
+[ 73%] Building CXX object src/CMakeFiles/llama.dir/models/modern-bert.cpp.o
+[ 73%] Building CXX object src/CMakeFiles/llama.dir/models/mistral4.cpp.o
+[ 74%] Building CXX object src/CMakeFiles/llama.dir/models/mpt.cpp.o
+[ 74%] Building CXX object src/CMakeFiles/llama.dir/models/muse-glimmer.cpp.o
+[ 75%] Building CXX object src/CMakeFiles/llama.dir/models/nanbeige.cpp.o
+[ 75%] Building CXX object src/CMakeFiles/llama.dir/models/nemotron-h-moe.cpp.o
+[ 76%] Building CXX object src/CMakeFiles/llama.dir/models/nemotron-h.cpp.o
+[ 76%] Building CXX object src/CMakeFiles/llama.dir/models/nemotron.cpp.o
+[ 77%] Building CXX object src/CMakeFiles/llama.dir/models/neo-bert.cpp.o
+[ 77%] Building CXX object src/CMakeFiles/llama.dir/models/nomic-bert-moe.cpp.o
+[ 77%] Building CXX object src/CMakeFiles/llama.dir/models/nomic-bert.cpp.o
+[ 78%] Building CXX object src/CMakeFiles/llama.dir/models/olmo.cpp.o
+[ 78%] Building CXX object src/CMakeFiles/llama.dir/models/olmo2.cpp.o
+[ 79%] Building CXX object src/CMakeFiles/llama.dir/models/olmoe.cpp.o
+[ 79%] Building CXX object src/CMakeFiles/llama.dir/models/openai-moe.cpp.o
+[ 80%] Building CXX object src/CMakeFiles/llama.dir/models/openelm.cpp.o
+[ 80%] Building CXX object src/CMakeFiles/llama.dir/models/orion.cpp.o
+[ 80%] Building CXX object src/CMakeFiles/llama.dir/models/paddleocr.cpp.o
+[ 81%] Building CXX object src/CMakeFiles/llama.dir/models/pangu-embed.cpp.o
+[ 81%] Building CXX object src/CMakeFiles/llama.dir/models/phi2.cpp.o
+[ 82%] Building CXX object src/CMakeFiles/llama.dir/models/phi3.cpp.o
+[ 82%] Building CXX object src/CMakeFiles/llama.dir/models/phimoe.cpp.o
+[ 83%] Building CXX object src/CMakeFiles/llama.dir/models/plamo.cpp.o
+[ 83%] Building CXX object src/CMakeFiles/llama.dir/models/plamo2.cpp.o
+[ 84%] Building CXX object src/CMakeFiles/llama.dir/models/plamo3.cpp.o
+[ 84%] Building CXX object src/CMakeFiles/llama.dir/models/plm.cpp.o
+[ 84%] Building CXX object src/CMakeFiles/llama.dir/models/pockettts.cpp.o
+[ 85%] Building CXX object src/CMakeFiles/llama.dir/models/qwen.cpp.o
+[ 85%] Building CXX object src/CMakeFiles/llama.dir/models/qwen2.cpp.o
+[ 86%] Building CXX object src/CMakeFiles/llama.dir/models/qwen2moe.cpp.o
+[ 86%] Building CXX object src/CMakeFiles/llama.dir/models/qwen2vl.cpp.o
+[ 87%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3.cpp.o
+[ 87%] Building CXX object src/CMakeFiles/llama.dir/models/qwen35.cpp.o
+[ 87%] Building CXX object src/CMakeFiles/llama.dir/models/qwen35moe.cpp.o
+[ 88%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3moe.cpp.o
+[ 88%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3next.cpp.o
+[ 89%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3tts.cpp.o
+[ 89%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3vl.cpp.o
+[ 90%] Building CXX object src/CMakeFiles/llama.dir/models/qwen3vlmoe.cpp.o
+[ 90%] Building CXX object src/CMakeFiles/llama.dir/models/qwen4exp.cpp.o
+[ 91%] Building CXX object src/CMakeFiles/llama.dir/models/refact.cpp.o
+[ 91%] Building CXX object src/CMakeFiles/llama.dir/models/rnd1.cpp.o
+[ 91%] Building CXX object src/CMakeFiles/llama.dir/models/rwkv6-base.cpp.o
+[ 92%] Building CXX object src/CMakeFiles/llama.dir/models/rwkv6.cpp.o
+[ 92%] Building CXX object src/CMakeFiles/llama.dir/models/rwkv6qwen2.cpp.o
+[ 93%] Building CXX object src/CMakeFiles/llama.dir/models/rwkv7-base.cpp.o
+[ 93%] Building CXX object src/CMakeFiles/llama.dir/models/rwkv7.cpp.o
+[ 94%] Building CXX object src/CMakeFiles/llama.dir/models/seed-oss.cpp.o
+[ 94%] Building CXX object src/CMakeFiles/llama.dir/models/smallthinker.cpp.o
+[ 94%] Building CXX object src/CMakeFiles/llama.dir/models/smollm3.cpp.o
+[ 95%] Building CXX object src/CMakeFiles/llama.dir/models/spark2-5.cpp.o
+[ 95%] Building CXX object src/CMakeFiles/llama.dir/models/stablelm.cpp.o
+[ 96%] Building CXX object src/CMakeFiles/llama.dir/models/starcoder.cpp.o
+[ 96%] Building CXX object src/CMakeFiles/llama.dir/models/starcoder2.cpp.o
+[ 97%] Building CXX object src/CMakeFiles/llama.dir/models/step35.cpp.o
+[ 97%] Building CXX object src/CMakeFiles/llama.dir/models/t5.cpp.o
+[ 98%] Building CXX object src/CMakeFiles/llama.dir/models/t5encoder.cpp.o
+[ 98%] Building CXX object src/CMakeFiles/llama.dir/models/talkie.cpp.o
+[ 98%] Building CXX object src/CMakeFiles/llama.dir/models/wavtokenizer-dec.cpp.o
+[100%] Building CXX object src/CMakeFiles/llama.dir/models/xverse.cpp.o
+[100%] Linking CXX shared library ../bin/libllama.so
+[100%] Built target llama
+[ 25%] Built target ggml-base
+[ 68%] Built target ggml-cann
+[ 93%] Built target ggml-cpu
+[100%] Built target ggml
+ ---> Removed intermediate container 353b60c80f1b
+ ---> 7644d00541e8
+Step 20/34 : FROM ${BASE_IMAGE} AS runtime
+ ---> 3c52b8cf2633
+Step 21/34 : ARG CANN_ENV=/usr/local/Ascend/cann/set_env.sh
+ ---> Running in f5421e5dd747
+ ---> Removed intermediate container f5421e5dd747
+ ---> e674491fd813
+Step 22/34 : ENV CANN_ENV=${CANN_ENV}
+ ---> Running in 4322ef177e01
+ ---> Removed intermediate container 4322ef177e01
+ ---> eeec94c8bcc2
+Step 23/34 : COPY --from=build /opt/qwen38-910/ /opt/qwen38-910/
+ ---> c4aef8aae081
+Step 24/34 : COPY --from=build /build/release/licenses/ /opt/qwen38-910/licenses/
+ ---> f796f20c1d0d
+Step 25/34 : COPY --from=build /build/release/THIRD_PARTY.md /opt/qwen38-910/THIRD_PARTY.md
+ ---> 69319104442c
+Step 26/34 : COPY --from=build /build/release/LICENSE /opt/qwen38-910/LICENSE
+ ---> 279f14393bb3
+Step 27/34 : COPY --from=build /build/release/release-manifest.json /opt/qwen38-910/release-manifest.json
+ ---> 998f00cf4526
+Step 28/34 : COPY scripts/release-entrypoint.sh /usr/local/bin/qwen38-910
+ ---> 4b9160fedd67
+Step 29/34 : RUN chmod 0755 /usr/local/bin/qwen38-910
+ ---> Running in 49b4e85e17d5
+ ---> Removed intermediate container 49b4e85e17d5
+ ---> 3cfc3bacf2e3
+Step 30/34 : WORKDIR /opt/qwen38-910
+ ---> Running in 1427025206b0
+ ---> Removed intermediate container 1427025206b0
+ ---> bdb9ad7e3ab6
+Step 31/34 : ENTRYPOINT ["/usr/local/bin/qwen38-910"]
+ ---> Running in 0d5c3e37a885
+ ---> Removed intermediate container 0d5c3e37a885
+ ---> e696b796db66
+Step 32/34 : CMD ["help"]
+ ---> Running in 979e81bfce10
+ ---> Removed intermediate container 979e81bfce10
+ ---> 3b7ccb95a62d
+Step 33/34 : LABEL org.opencontainers.image.title="Legacy Ascend Qwen3.8 runtime"
+ ---> Running in 4bd61538e230
+ ---> Removed intermediate container 4bd61538e230
+ ---> 70e07f411a54
+Step 34/34 : LABEL org.opencontainers.image.version="2026.09.19-experimental"
+ ---> Running in 0d83e143554d
+ ---> Removed intermediate container 0d83e143554d
+ ---> de9995726583
+Successfully built de9995726583
+Successfully tagged legacy-ascend-qwen38:2026.09.19

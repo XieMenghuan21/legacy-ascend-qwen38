@@ -1,0 +1,36 @@
+{
+  "image_tag": "legacy-ascend-qwen38:2026.09.19",
+  "image_id": "sha256:de9995726583f9b80775b79282b81573fecd36a42fbf7c1deba239f8764a29d2",
+  "architecture": "arm64",
+  "size_bytes": 27922159352,
+  "base_image_id": "sha256:3c52b8cf26336a45f1df0764f7246bc83e24c7b68df300ad3d25f6ddd1e5ca72",
+  "clean_docker_build_passed": true,
+  "pinned_source_tree_verified": true,
+  "cache_fix_rpath_sanitized": true,
+  "cache_fix_sha256": "344f759c370ab28b08ce38d73aa2e2b464a5ce84a139a7d726704e879570c324",
+  "ldd_relocation_check_passed": true,
+  "isolated_container_operator_suite_passed": true,
+  "model_regression_passed": true,
+  "fixed_64_token_trials_passed": 2,
+  "runtime_flags": [
+    "--network none",
+    "--privileged",
+    "--shm-size 8g"
+  ],
+  "mounts": [
+    "/usr/local/Ascend/driver:/usr/local/Ascend/driver:ro",
+    "user-supplied model file:/models/model.gguf:ro"
+  ],
+  "model_device_ids": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "public_registry_pushed": false,
+  "note": "Source compilation and kernel generation executed in Docker; cache backport used a pinned prebuilt library. No claim of source-only rebuild for every SDK dependency.",
+  "weight_converter_startup_without_driver_mount": "Usage reached without dynamic-linker failure",
+  "original_sdk_nn_opbase_sha256_after_tests": "7f0a0e1d437a285a593dac4cb6f394ea07a513d2988f0c93f0ed1dc7af2ef9ff"
+}
