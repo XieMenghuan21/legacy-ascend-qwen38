@@ -37,3 +37,7 @@ permission for that base.
 - Abseil 20230802.1: [Apache 2.0 license](licenses/abseil-Apache-2.0.txt).
 
 These notices accompany the derived cache library. Its dynamic CANN and protobuf dependencies remain supplied by the compatible SDK image, not by this source archive.
+
+## Public image distribution
+
+The sanitized `2026.09.19-public` image is supplied as multipart GitHub Release assets. It retains the SDK component licenses and notices installed in the base environment; the root MIT license does not relicense those components. Historical runtime logs and user-level configuration were removed before filesystem flattening. Model weights and host drivers are not included. See docs/PUBLIC_IMAGE.md for the exact image identity and archive checksums.

@@ -1,0 +1,83 @@
+{
+  "created_utc": "2026-09-19T10:00:20.386694+00:00",
+  "source_image": "legacy-ascend-qwen38:2026.09.19",
+  "source_image_id": "sha256:de9995726583f9b80775b79282b81573fecd36a42fbf7c1deba239f8764a29d2",
+  "public_image": "legacy-ascend-qwen38:2026.09.19-public",
+  "public_image_id": "sha256:cf8abd0ef1556b82c8af8b8520f3c68da0f528c0e22798facdc9d58dd52fcff7",
+  "public_image_bytes": 18847576764,
+  "architecture": "arm64",
+  "removed_paths": [
+    "/root/ascend",
+    "/root/mindie",
+    "/root/log",
+    "/root/Ascend",
+    "/root/atc_data",
+    "/root/.bash_history",
+    "/root/.viminfo",
+    "/root/.wget-hsts",
+    "/root/.cache",
+    "/root/.tvm_test_data",
+    "/root/.ssh",
+    "/root/.gitconfig",
+    "/root/.pip"
+  ],
+  "flattened_layer_count": 1,
+  "history_entry_count": 1,
+  "old_layer_overlap": false,
+  "config_fields_identical": {
+    "Env": true,
+    "WorkingDir": true,
+    "User": true,
+    "Entrypoint": true,
+    "Cmd": true,
+    "Labels": true,
+    "ExposedPorts": true,
+    "Volumes": true
+  },
+  "runtime_hashes_identical": true,
+  "runtime_file_count": 76,
+  "residue_paths_remaining": [],
+  "help_exit_status": 0,
+  "convert_without_args_exit_status": 2,
+  "npu_tests_run": true,
+  "notes": "Original image and host services unchanged. SDK binaries and existing licenses retained.",
+  "archive": {
+    "name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz",
+    "bytes": 7829988076,
+    "sha256": "fc88ea4a0b62fd49b2efd287226977842b097a30f338bd3ca7fe6197e96e57ee",
+    "gzip_integrity_passed": true
+  },
+  "model_regression_passed": true,
+  "model_regression_requests": 4,
+  "standalone_operator_suite_repeated": false,
+  "unchanged_operator_files_match_previous_tested_image": true,
+  "performance_note": "No new fixed-length headline benchmark; previous 5.67 tok/s remains tied to its original measured image.",
+  "distribution": {
+    "release": "https://github.com/XieMenghuan21/legacy-ascend-qwen38/releases/tag/v2026.09.19-public-image",
+    "archive_name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz",
+    "archive_size": 7829988076,
+    "archive_sha256": "fc88ea4a0b62fd49b2efd287226977842b097a30f338bd3ca7fe6197e96e57ee",
+    "parts": [
+      {
+        "name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz.part00",
+        "size": 1992294400,
+        "sha256": "5561ca30806905531f81a167f7a6e3f0a8ee63a1ad0a1dca2bf0e658232e8a81"
+      },
+      {
+        "name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz.part01",
+        "size": 1992294400,
+        "sha256": "baa8ed895dae436540700285cbe135dd541eb51b7c9adf6d0b8be816a3f3850a"
+      },
+      {
+        "name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz.part02",
+        "size": 1992294400,
+        "sha256": "4a0ee4167cb20d3a0207f79f1d7eff1947e49a3b419c16762eec669666138151"
+      },
+      {
+        "name": "legacy-ascend-qwen38-2026.09.19-public.tar.gz.part03",
+        "size": 1853104876,
+        "sha256": "582b3b3b437abd68b00effa7ca899f3f2de459c7b3187f0c41e929b03f8245eb"
+      }
+    ]
+  }
+}

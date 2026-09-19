@@ -1,0 +1,296 @@
+{
+  "/opt/qwen38-910/LICENSE": {
+    "sha256": "f5eee63fb76b6585d82d7c3e7e7c5136331316c3256e72cb6bdf587f234d20de",
+    "size": 1077
+  },
+  "/opt/qwen38-910/THIRD_PARTY.md": {
+    "sha256": "d690aff7e9d0f1605efbdbec2c1ed956ffe65a62ebf46d80bb37df1db7937544",
+    "size": 3547
+  },
+  "/opt/qwen38-910/bin/expand-weights": {
+    "sha256": "e2d23d1fbc74fdb0f11af933ecffd2e9d65a02e669ee72b34acc40197231d251",
+    "size": 71064
+  },
+  "/opt/qwen38-910/bin/model-benchmark": {
+    "sha256": "f3aecee93cb0ae01cb0fffec5de07742997b9b765db9eab2b36ce091ccaa9b1e",
+    "size": 79928
+  },
+  "/opt/qwen38-910/bin/test_gdn_backend": {
+    "sha256": "8c2f1b5d871bad2de7c06074c1d7dfa1bb18972f3e81e84113923691ac6ec0b9",
+    "size": 77736
+  },
+  "/opt/qwen38-910/bin/test_mm_cache": {
+    "sha256": "fef1ab21f6753df10e79e1ba8865d9e38199a8ecb015262c35ad4cb7ab34f77f",
+    "size": 76928
+  },
+  "/opt/qwen38-910/bin/test_rms_backend": {
+    "sha256": "d6401d0c551e85ac359967c4b61c39aa60da270f9b55b8b95b1b7435d30cdb10",
+    "size": 76720
+  },
+  "/opt/qwen38-910/bin/test_rope_backend": {
+    "sha256": "a1263f18116eb7903da5a80a0197602c8fe0edc3c152425d6473930ff8247362",
+    "size": 74992
+  },
+  "/opt/qwen38-910/bin/test_setrows_backend": {
+    "sha256": "b5bd7855110f2ab597508ba57aa3b7f8e9829703a8b873401117e976d29b5211",
+    "size": 78304
+  },
+  "/opt/qwen38-910/bin/test_ssm_bench": {
+    "sha256": "0faddc3b1039a53a1ffb1bb9451971adda5e558947c07bfd776722d56971d088",
+    "size": 77584
+  },
+  "/opt/qwen38-910/bin/validate-operators": {
+    "sha256": "2351581efcc4a44be49e1c9c6734f0ef736835da6bc5a2a387101848fa938117",
+    "size": 1291
+  },
+  "/opt/qwen38-910/cache-fix/libnnopbase.so": {
+    "sha256": "344f759c370ab28b08ce38d73aa2e2b464a5ce84a139a7d726704e879570c324",
+    "size": 4828312
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_decode_910.json": {
+    "sha256": "0c53ba470b16c332d1c8a4582cdfcdd8d5c4a4b90011582878c5b5718f6bc56a",
+    "size": 510
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_decode_910.o": {
+    "sha256": "0b835a7605a8fd7e275c1679598842bc000e09e1226450927e70d1234246c328",
+    "size": 1928
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_decode_910_h48.json": {
+    "sha256": "4e311ae4d7775445619eb85e103010010d1caa126d4b59f9b29b3e7c38e112f5",
+    "size": 518
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_decode_910_h48.o": {
+    "sha256": "ab4f5ee436763ef0fed61d2ae53553985eba1cbdc5ba5f331cd8178cfad5ec5e",
+    "size": 2192
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_native_h48_q16.json": {
+    "sha256": "ffdc3022bbc51a56d55599302c4d1ccfe6b6fcc96d00fbe740b983a6f43fc231",
+    "size": 518
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_native_h48_q16.o": {
+    "sha256": "a449f78e3d8ff5fc458b077996c626867a36b4ebe47fbd1519151dc522048178",
+    "size": 2352
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_native_h48_q48.json": {
+    "sha256": "c8311d78f128ac2448bbfaf0374c8c2c53d87b16cb602631db6bf7d34980645a",
+    "size": 518
+  },
+  "/opt/qwen38-910/kernel_meta/gdn_native_h48_q48.o": {
+    "sha256": "817548ce5563886797acd5066152b47842d5fa58dca3ab5974ec99d36b6d9463",
+    "size": 2296
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_l2_manifest.json": {
+    "sha256": "6a02d958be42fcde6e300525b87028b10787788464fd4abbc274dfc0a3d2dde4",
+    "size": 240
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_manifest.json": {
+    "sha256": "63736cc8bf8d9af747700446fbc78ee63b950b0d4404b89410bbb94642dc8146",
+    "size": 917
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w128_r16_s128_l2.json": {
+    "sha256": "949de67a295f1e8d302a05fb450abfd4daf27b716d76fa81c140f281a980404f",
+    "size": 435
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w128_r16_s128_l2.o": {
+    "sha256": "98cdec8542ad60a9198455b21ca95a2a75dc4e143e7c270b3600ec04b2d76b8a",
+    "size": 1600
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w128_r48_s128.json": {
+    "sha256": "4fa882a4a938bbcf085efe6f8811b7c98158fdfcdb73b13f61c665cc338086e2",
+    "size": 429
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w128_r48_s128.o": {
+    "sha256": "efd6525049c85b4634445404e18cbdf27beec576211caa77066d7fe19837fffe",
+    "size": 1904
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w256_r24_s512.json": {
+    "sha256": "6015195ac25ff4fef4968c7d6c1a39f33b65d7b136ead3df9dedfe4e0d960cfc",
+    "size": 429
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w256_r24_s512.o": {
+    "sha256": "010cfe6cb9656820d2127c3a474038fff75ff8c494f789c4cdfb9f7fdc9ebb36",
+    "size": 1600
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w256_r4_s256.json": {
+    "sha256": "84a0a07daa9aaf75ca338c0c494a69ebcd7cac489ad2807cfe2dfd018ea8d65e",
+    "size": 426
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w256_r4_s256.o": {
+    "sha256": "f8799c8e87a55f0b38bfe92637f46395b9991e3ae9e319eecd0397055445fd9b",
+    "size": 1592
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w5120_r1_s5120.json": {
+    "sha256": "4ceb10cd8e302fc5a0c085873a406297f02442127100b838bca6a5affc14dd07",
+    "size": 430
+  },
+  "/opt/qwen38-910/kernel_meta/rms_910_w5120_r1_s5120.o": {
+    "sha256": "af4bca69c95fdd1cab85d46ce0f0554db878b4ce7c54f8bbc5040a16a4e1ae9f",
+    "size": 1592
+  },
+  "/opt/qwen38-910/kernel_meta/rope_910_h24_t1.json": {
+    "sha256": "8b1e8f3311cb1b73f4c7e2e9b786759b61461b23af5aa4b370d0badd052c77b8",
+    "size": 445
+  },
+  "/opt/qwen38-910/kernel_meta/rope_910_h24_t1.o": {
+    "sha256": "6ae1b717514c818209c409c3d51d427775767108f7dd1751fec207ed349e9fd5",
+    "size": 1368
+  },
+  "/opt/qwen38-910/kernel_meta/rope_910_h4_t1.json": {
+    "sha256": "da892104e7c57018b634e4fa2edd7f6a29e45e240ff52da36476a8d3914d9e30",
+    "size": 442
+  },
+  "/opt/qwen38-910/kernel_meta/rope_910_h4_t1.o": {
+    "sha256": "7813e54cbfa7635e32f7eb95d94d2d21c5fa7e66d8fd7fc2ffd4e14fd0ce135a",
+    "size": 1368
+  },
+  "/opt/qwen38-910/kernel_meta/setrows_k_910_t1.json": {
+    "sha256": "dba241763613c24ff86c8c310eee9c032e12013b34ca21a4c582c18981396cb9",
+    "size": 434
+  },
+  "/opt/qwen38-910/kernel_meta/setrows_k_910_t1.o": {
+    "sha256": "372254083e9623eeff8c54037fa9aa1cf1fb84c6672c50c05d2d2c56e91c7605",
+    "size": 1360
+  },
+  "/opt/qwen38-910/kernel_meta/setrows_v_910_t1.json": {
+    "sha256": "9bd255417718061c5b8b470bfa06669f0f8e4028ef4c47336c5104dbe7a1b62f",
+    "size": 448
+  },
+  "/opt/qwen38-910/kernel_meta/setrows_v_910_t1.o": {
+    "sha256": "4a555bac9c8e64cbbfa08b4f843bb43d96b827731e795698f99a68e3f73c8bfa",
+    "size": 1480
+  },
+  "/opt/qwen38-910/kernel_meta/ssm_conv_910_t1.json": {
+    "sha256": "14f1b0ab5c955e6bf562f9c0ffac8472aee4b4ddb011b9fbe387f564d4df4c7f",
+    "size": 431
+  },
+  "/opt/qwen38-910/kernel_meta/ssm_conv_910_t1.o": {
+    "sha256": "e3c4af50458bcd867dd6667577da4c2e345aff675b6e9ce39ad48dc47f3e3956",
+    "size": 1392
+  },
+  "/opt/qwen38-910/lib/libggml-base.so": {
+    "symlink": "libggml-base.so.0"
+  },
+  "/opt/qwen38-910/lib/libggml-base.so.0": {
+    "symlink": "libggml-base.so.0.23.0"
+  },
+  "/opt/qwen38-910/lib/libggml-base.so.0.23.0": {
+    "sha256": "6cea7056c7acf141aae37700cef82ab51a408489e6e9282d76ac7bc2b4face4a",
+    "size": 805080
+  },
+  "/opt/qwen38-910/lib/libggml-cann.so": {
+    "symlink": "libggml-cann.so.0"
+  },
+  "/opt/qwen38-910/lib/libggml-cann.so.0": {
+    "symlink": "libggml-cann.so.0.23.0"
+  },
+  "/opt/qwen38-910/lib/libggml-cann.so.0.23.0": {
+    "sha256": "40092c0c730221bf167913690e80720ec5216ddb82c022fee5a7b65e620fc082",
+    "size": 397392
+  },
+  "/opt/qwen38-910/lib/libggml-cpu.so": {
+    "symlink": "libggml-cpu.so.0"
+  },
+  "/opt/qwen38-910/lib/libggml-cpu.so.0": {
+    "symlink": "libggml-cpu.so.0.23.0"
+  },
+  "/opt/qwen38-910/lib/libggml-cpu.so.0.23.0": {
+    "sha256": "0d17e31e9a66908b0cba8628fdabff8cbcf0b9e9f93c437b59378a9e6fd6a88b",
+    "size": 1062552
+  },
+  "/opt/qwen38-910/lib/libggml.so": {
+    "symlink": "libggml.so.0"
+  },
+  "/opt/qwen38-910/lib/libggml.so.0": {
+    "symlink": "libggml.so.0.23.0"
+  },
+  "/opt/qwen38-910/lib/libggml.so.0.23.0": {
+    "sha256": "56218ba29ab1de3aacbfb95ffb278aab8af95315da7cf9bab91002dadb0e0510",
+    "size": 77296
+  },
+  "/opt/qwen38-910/lib/libllama.so": {
+    "symlink": "libllama.so.0"
+  },
+  "/opt/qwen38-910/lib/libllama.so.0": {
+    "symlink": "libllama.so.0.4.0"
+  },
+  "/opt/qwen38-910/lib/libllama.so.0.4.0": {
+    "sha256": "5ef748fdddbab9257e257a54eba98bcafa7e1c7705e075887afa8ebbf916f005",
+    "size": 4195616
+  },
+  "/opt/qwen38-910/licenses/CANN-COSL-2.0.txt": {
+    "sha256": "cb282ac2b66d7d6734c3fb354db792b28cf23ab29fbc16d5cfd8bd542bedeb1e",
+    "size": 5278
+  },
+  "/opt/qwen38-910/licenses/abseil-Apache-2.0.txt": {
+    "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+    "size": 11361
+  },
+  "/opt/qwen38-910/licenses/llama.cpp-MIT.txt": {
+    "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+    "size": 1078
+  },
+  "/opt/qwen38-910/licenses/nlohmann-json-MIT.txt": {
+    "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+    "size": 1076
+  },
+  "/opt/qwen38-910/licenses/opbase-third-party.yaml": {
+    "sha256": "a49ae3ed4bf8adcaf697a2f2130dbb860b09eb98ba86b0e8086b26f74f6fa14b",
+    "size": 333
+  },
+  "/opt/qwen38-910/licenses/protobuf-BSD.txt": {
+    "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+    "size": 1732
+  },
+  "/opt/qwen38-910/release-manifest.json": {
+    "sha256": "61ea075939dd8890f579e7fe3f90035d86a60cea3ce5f343527c70c7989cb3eb",
+    "size": 2372
+  },
+  "/opt/qwen38-910/tests/oracles/gdn_reference.py": {
+    "sha256": "ff86207a301369679f39cc1b026e7f160d4bea7a9438576aec2aa6955c20a487",
+    "size": 10891
+  },
+  "/opt/qwen38-910/tests/oracles/generate_fixtures.py": {
+    "sha256": "ca561a33194908b00b384eb535d49af33cb472c765a2b6e202b998e0016bd123",
+    "size": 3739
+  },
+  "/opt/qwen38-910/tests/oracles/ssm_conv_reference.py": {
+    "sha256": "eb9e7c3f97da28db3f599900db8388708b7e07744547e2495b52fb841936efd6",
+    "size": 5111
+  },
+  "/opt/qwen38-910/tests/oracles/verify_gdn.py": {
+    "sha256": "5396149d53bfba592cf8e7e1cbf5b99f7d6c766599334cb66b34aabad008a26b",
+    "size": 2421
+  },
+  "/opt/qwen38-910/tests/test_gdn_backend.cpp": {
+    "sha256": "06d5c69560362b467574079cf0e16c231793f63c10bdb20f15dd87d0688b0d0b",
+    "size": 9774
+  },
+  "/opt/qwen38-910/tests/test_mm_cache.cpp": {
+    "sha256": "f2aa39bd1ee2f368104ea046a674ffb22299b47054da4a1f1902b89518924181",
+    "size": 8455
+  },
+  "/opt/qwen38-910/tests/test_rms_backend.cpp": {
+    "sha256": "f0b5eb4dcf5d1f93230f30fa18150376f286e090c41986dbad3446169315c9de",
+    "size": 7312
+  },
+  "/opt/qwen38-910/tests/test_rope_backend.cpp": {
+    "sha256": "f5d24aec499da7f350b5e4cc7528e15ac75a5b909cf887cd546982f5b01af40e",
+    "size": 7774
+  },
+  "/opt/qwen38-910/tests/test_setrows_backend.cpp": {
+    "sha256": "ba221e19e3a4f1b38f57429dcf72afbc24b55e6e5e9e63c8d344c7070184833a",
+    "size": 5339
+  },
+  "/opt/qwen38-910/tests/test_ssm_bench.cpp": {
+    "sha256": "c4b3c90eb8836fe613925f005898f0fb68766ac090112701327399cbd57d64c5",
+    "size": 9620
+  },
+  "/opt/qwen38-910/tests/validate-operators.sh": {
+    "sha256": "2351581efcc4a44be49e1c9c6734f0ef736835da6bc5a2a387101848fa938117",
+    "size": 1291
+  },
+  "/usr/local/bin/qwen38-910": {
+    "sha256": "7d226fa4cc17fa4a6857c1102fd38f48e272bbf0bd70791686685baec22b4b25",
+    "size": 2143
+  }
+}

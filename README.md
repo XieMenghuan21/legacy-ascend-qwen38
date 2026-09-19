@@ -23,11 +23,12 @@ ACL 返回的 SoC 名称是 `Ascend910B`，这里指旧款 910，不应与 Atlas
 | 主机驱动 / 容器 CANN | 25.5.2 / 8.5.0 |
 | 模型 | Qwen3.8-27B，GGUF `qwen35`，Q4 展开存储 |
 | 并发 / 上下文 | 1 / 256 tokens |
-| 镜像标签 | `legacy-ascend-qwen38:2026.09.19`，尚未推送公共 registry |
+| 公开镜像 | `legacy-ascend-qwen38:2026.09.19-public`，通过 Release 分卷发布 |
 
+- [完整镜像下载与校验信息](docs/PUBLIC_IMAGE.md)
 - [完整优化报告与效果](docs/OPTIMIZATION_REPORT.md)
 - [全部参数、开关与适用范围](docs/PARAMETERS.md)
-- [构建、启动、转换权重、导出镜像](docs/CONTAINER.md)
+- [镜像构建与发布范围](docs/CONTAINER.md)
 - [算子 ABI、边界与验证](docs/OPERATORS.md)
 - [CANN 缓存修复来源及 ABI](docs/CACHE_FIX.md)
 - [性能测试协议](docs/BENCHMARKS.md)
@@ -45,7 +46,7 @@ docker build --build-arg BASE_IMAGE="$BASE_IMAGE" \
   -t legacy-ascend-qwen38:2026.09.19 .
 ```
 
-实际验收命令包含 `--privileged`，适用于本次旧驱动容器环境；具体权限边界、模型挂载和六卡运行命令见 [容器说明](docs/CONTAINER.md)。基础镜像版本、源码 commit、模型及修复库哈希见 [manifest](release-manifest.json)，最终镜像 ID 见 [镜像验收记录](benchmarks/image-validation.json)。
+实际验收的权限与挂载参数记录于验收 JSON；公开文档只说明 [构建与发布范围](docs/CONTAINER.md)，不提供私人部署接口或模型调用示例。基础镜像版本、源码 commit、模型及修复库哈希见 [manifest](release-manifest.json)，最终镜像 ID 见 [镜像验收记录](benchmarks/image-validation.json)。
 
 ## 源码位置
 

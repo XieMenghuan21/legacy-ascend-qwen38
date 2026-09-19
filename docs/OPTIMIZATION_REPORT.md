@@ -58,7 +58,7 @@
 - 构建：固定 llama.cpp 源树 + 完整补丁 + TIK 编译，采用独立固定哈希缓存库。
 - 运行：`--network none --privileged --shm-size 8g`，驱动与模型只读挂载，详见 [CONTAINER.md](CONTAINER.md)。
 
-源码、补丁、测试、构建文件、许可证、参数、脱敏原始证据全部随包，并发布于 [https://github.com/XieMenghuan21/legacy-ascend-qwen38](https://github.com/XieMenghuan21/legacy-ascend-qwen38)。完整 SDK 镜像在原实验主机保留并导出，未推送 GitHub/GHCR。SDK 基础镜像和模型权重需独立取得；公共源码包不附带它们。
+源码、补丁、测试、构建文件、许可证、参数、脱敏原始证据全部随包，并发布于 [https://github.com/XieMenghuan21/legacy-ascend-qwen38](https://github.com/XieMenghuan21/legacy-ascend-qwen38)。原始实验镜像保留在实验主机；清理后的公开版本已作为 Release 分卷提供，见 [PUBLIC_IMAGE.md](PUBLIC_IMAGE.md)。未推送 GHCR。SDK 基础镜像和模型权重需独立取得；公共源码包不附带它们。
 
 当前交付是 CLI 实验镜像，ctx=256、并发=1；未新增 HTTP 服务。长上下文、高并发、视觉、工具调用及其他卡型/SDK组合不在本次验收范围。
 

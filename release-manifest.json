@@ -32,7 +32,8 @@
   "container": {
     "base_image": "explicit build argument BASE_IMAGE; compatible original-910 CANN 8.5.0 SDK image required",
     "validation_report": "benchmarks/image-validation.json",
-    "base_image_id_in_test": "sha256:3c52b8cf26336a45f1df0764f7246bc83e24c7b68df300ad3d25f6ddd1e5ca72"
+    "base_image_id_in_test": "sha256:3c52b8cf26336a45f1df0764f7246bc83e24c7b68df300ad3d25f6ddd1e5ca72",
+    "public_distribution_report": "benchmarks/public-image-validation.json"
   },
   "benchmark": {
     "context_tokens": 256,
